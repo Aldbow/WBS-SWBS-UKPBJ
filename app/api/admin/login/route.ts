@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 
 export async function POST(request: NextRequest) {
   try {
@@ -8,43 +6,26 @@ export async function POST(request: NextRequest) {
 
     // Validate credentials
     const adminUsername = process.env.ADMIN_USERNAME;
-    const adminPasswordHash = process.env.ADMIN_PASSWORD_HASH;
-    const jwtSecret = process.env.JWT_SECRET;
+    const adminPassword = process.env.ADMIN_PASSWORD; // Plain text password
 
-    if (!adminUsername || !adminPasswordHash || !jwtSecret) {
+    if (!adminUsername || !adminPassword) {
       return NextResponse.json(
         { error: 'Server configuration error' },
         { status: 500 }
       );
     }
 
-    if (username !== adminUsername) {
+    if (username !== adminUsername || password !== adminPassword) {
       return NextResponse.json(
         { error: 'Invalid credentials' },
         { status: 401 }
       );
     }
 
-    const isValidPassword = await bcrypt.compare(password, adminPasswordHash);
-
-    if (!isValidPassword) {
-      return NextResponse.json(
-        { error: 'Invalid credentials' },
-        { status: 401 }
-      );
-    }
-
-    // Generate JWT token
-    const token = jwt.sign(
-      { username, role: 'admin' },
-      jwtSecret,
-      { expiresIn: '8h' }
-    );
-
+    // Instead of JWT, return success response
     return NextResponse.json({
       success: true,
-      token,
-      username,
+      message: 'Login successful',
     });
 
   } catch (error) {

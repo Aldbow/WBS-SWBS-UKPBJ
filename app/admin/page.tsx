@@ -21,12 +21,12 @@ export default function AdminLoginPage() {
         body: JSON.stringify(credentials),
       });
 
-      const data = await response.json();
-
       if (response.ok) {
-        localStorage.setItem('admin_token', data.token);
+        // Store a simple admin session in localStorage
+        localStorage.setItem('admin_logged_in', 'true');
         router.push('/admin/dashboard');
       } else {
+        const data = await response.json();
         setError(data.error || 'Login gagal. Silakan periksa username dan password Anda.');
       }
     } catch (error) {

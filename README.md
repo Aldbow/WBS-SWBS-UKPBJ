@@ -104,9 +104,9 @@ SHEET_ID_DEKLARASI=your-deklarasi-sheet-id
 # Google Drive Folder ID
 DRIVE_FOLDER_ID=your-drive-folder-id
 
-# Admin Credentials (Generate hash menggunakan bcrypt)
+# Admin Credentials (Plain text password for development)
 ADMIN_USERNAME=admin
-ADMIN_PASSWORD_HASH=$2a$10$yourBcryptHashHere
+ADMIN_PASSWORD=your-admin-password-here
 
 # JWT Secret
 JWT_SECRET=your-very-secret-jwt-key-at-least-32-characters

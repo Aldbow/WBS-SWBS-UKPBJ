@@ -175,9 +175,9 @@ SHEET_ID_DEKLARASI=1def...uvw
 # Google Drive Folder ID
 DRIVE_FOLDER_ID=1ghi...rst
 
-# Admin Credentials (akan diisi setelah generate hash)
+# Admin Credentials (Plain text password for development)
 ADMIN_USERNAME=admin
-ADMIN_PASSWORD_HASH=
+ADMIN_PASSWORD=your-admin-password-here
 
 # JWT Secret (generate random string minimal 32 karakter)
 JWT_SECRET=your-super-secret-jwt-key-minimum-32-characters-long

@@ -36,8 +36,8 @@ export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    const token = localStorage.getItem('admin_token');
-    if (!token) {
+    const isLoggedIn = localStorage.getItem('admin_logged_in');
+    if (isLoggedIn !== 'true') {
       router.push('/admin');
       return;
     }
@@ -47,11 +47,10 @@ export default function AdminDashboard() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('admin_token');
-      
+      // Make requests without JWT token since we're using simple auth
       const [laporanRes, deklarasiRes] = await Promise.all([
-        fetch('/api/admin/get-laporan', { headers: { 'Authorization': `Bearer ${token}` }}),
-        fetch('/api/admin/get-deklarasi', { headers: { 'Authorization': `Bearer ${token}` }})
+        fetch('/api/admin/get-laporan'),
+        fetch('/api/admin/get-deklarasi')
       ]);
 
       if (laporanRes.ok) {
@@ -71,7 +70,7 @@ export default function AdminDashboard() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('admin_token');
+    localStorage.removeItem('admin_logged_in');
     router.push('/admin');
   };
 
