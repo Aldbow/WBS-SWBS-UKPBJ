@@ -1,0 +1,76 @@
+'use client';
+
+import Link from 'next/link';
+import { useState } from 'react';
+
+export default function Header() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  return (
+    <header className="bg-white shadow-md sticky top-0 z-50">
+      <nav className="container mx-auto px-4 py-4">
+        <div className="flex justify-between items-center">
+          {/* Logo */}
+          <Link href="/" className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-primary-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-xl">WBS</span>
+            </div>
+            <div className="hidden md:block">
+              <h1 className="text-lg font-bold text-gray-800">SWBS UKPBJ</h1>
+              <p className="text-xs text-gray-600">Kementerian Ketenagakerjaan</p>
+            </div>
+          </Link>
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-6">
+            <Link href="/" className="text-gray-700 hover:text-primary-600 transition-colors font-medium">
+              Beranda
+            </Link>
+            <Link href="/laporan" className="text-gray-700 hover:text-primary-600 transition-colors font-medium">
+              Buat Laporan
+            </Link>
+            <Link href="/deklarasi" className="text-gray-700 hover:text-primary-600 transition-colors font-medium">
+              Buat Deklarasi
+            </Link>
+            <Link href="/admin" className="btn-primary">
+              Login Admin
+            </Link>
+          </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            className="md:hidden p-2"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {mobileMenuOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
+          </button>
+        </div>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden mt-4 pb-4 space-y-3 animate-fade-in">
+            <Link href="/" className="block py-2 text-gray-700 hover:text-primary-600 transition-colors font-medium">
+              Beranda
+            </Link>
+            <Link href="/laporan" className="block py-2 text-gray-700 hover:text-primary-600 transition-colors font-medium">
+              Buat Laporan
+            </Link>
+            <Link href="/deklarasi" className="block py-2 text-gray-700 hover:text-primary-600 transition-colors font-medium">
+              Buat Deklarasi
+            </Link>
+            <Link href="/admin" className="block py-2 text-primary-600 font-semibold">
+              Login Admin
+            </Link>
+          </div>
+        )}
+      </nav>
+    </header>
+  );
+}
