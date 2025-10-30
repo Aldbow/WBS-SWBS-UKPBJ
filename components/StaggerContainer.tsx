@@ -7,12 +7,14 @@ interface StaggerContainerProps {
   children: ReactNode;
   className?: string;
   staggerDelay?: number;
+  delay?: number;
 }
 
 export default function StaggerContainer({
   children,
   className = '',
   staggerDelay = 0.1,
+  delay = 0.2,
 }: StaggerContainerProps) {
   const container = {
     hidden: { opacity: 0 },
@@ -20,7 +22,7 @@ export default function StaggerContainer({
       opacity: 1,
       transition: {
         staggerChildren: staggerDelay,
-        delayChildren: 0.2,
+        delayChildren: delay,
       },
     },
   };

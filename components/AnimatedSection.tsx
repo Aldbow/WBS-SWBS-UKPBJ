@@ -7,7 +7,7 @@ interface AnimatedSectionProps {
   children: ReactNode;
   className?: string;
   delay?: number;
-  animation?: 'fadeIn' | 'slideUp' | 'slideLeft' | 'slideRight' | 'scaleUp' | 'zoomIn';
+  animation?: 'fadeIn' | 'slideUp' | 'slideLeft' | 'slideRight' | 'scaleUp' | 'zoomIn' | 'slideDown';
   duration?: number;
 }
 
@@ -18,6 +18,10 @@ const animations: Record<string, Variants> = {
   },
   slideUp: {
     hidden: { opacity: 0, y: 50 },
+    visible: { opacity: 1, y: 0 },
+  },
+  slideDown: {
+    hidden: { opacity: 0, y: -50 },
     visible: { opacity: 1, y: 0 },
   },
   slideLeft: {
