@@ -4,16 +4,26 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { DeklarasiFormData } from '@/types/deklarasi';
 
 export default function DeklarasiPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [agreed, setAgreed] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<DeklarasiFormData & {
+    keluarga?: string;
+    keuangan?: string;
+    hadiah?: string;
+    pekerjaan?: string;
+    kepentingan?: string;
+    lainnya?: string;
+    lainnyaLainnya?: string;
+  }>({
     namaLengkap: '',
     nipNik: '',
     jabatan: '',
+    peranKegiatan: '',
     satuanKerja: 'UKPBJ Kementerian Ketenagakerjaan',
     namaKegiatan: '',
     pihakTerkait: '',
@@ -42,11 +52,19 @@ export default function DeklarasiPage() {
           namaLengkap: '',
           nipNik: '',
           jabatan: '',
+          peranKegiatan: '',
           satuanKerja: 'UKPBJ Kementerian Ketenagakerjaan',
           namaKegiatan: '',
           pihakTerkait: '',
           bentukHubungan: '',
           uraianDetail: '',
+          keluarga: undefined,
+          keuangan: undefined,
+          hadiah: undefined,
+          pekerjaan: undefined,
+          kepentingan: undefined,
+          lainnya: undefined,
+          lainnyaLainnya: '',
         });
         setAgreed(false);
       } else {
@@ -169,8 +187,24 @@ export default function DeklarasiPage() {
                       <input
                         type="text"
                         required
+                        placeholder="Contoh: UKPBJ Kementerian Ketenagakerjaan"
                         value={formData.satuanKerja}
                         onChange={(e) => setFormData({ ...formData, satuanKerja: e.target.value })}
+                        className="input-field"
+                      />
+                    </div>
+
+                    {/* Peran dalam Kegiatan / Proses */}
+                    <div>
+                      <label className="form-label">
+                        Peran dalam Kegiatan / Proses <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Contoh: Pengadaan, Evaluasi, Pemeriksaan, dll."
+                        value={formData.peranKegiatan}
+                        onChange={(e) => setFormData({ ...formData, peranKegiatan: e.target.value })}
                         className="input-field"
                       />
                     </div>
@@ -207,7 +241,7 @@ export default function DeklarasiPage() {
                       <input
                         type="text"
                         required
-                        placeholder="Contoh: PT. Maju Mundur atau Bapak Budi Hartono, Direktur PT. X"
+                        placeholder="Contoh: PT. JAYA, Direktur PT. X"
                         value={formData.pihakTerkait}
                         onChange={(e) => setFormData({ ...formData, pihakTerkait: e.target.value })}
                         className="input-field"
@@ -255,6 +289,224 @@ export default function DeklarasiPage() {
                         onChange={(e) => setFormData({ ...formData, uraianDetail: e.target.value })}
                         className="input-field"
                       />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bagian B2: Situasi Potensial Benturan Kepentingan */}
+                <div className="border-l-4 border-yellow-600 pl-6">
+                  <h2 className="text-xl font-bold text-gray-800 mb-4">
+                    Bagian B2: Situasi Potensial Benturan Kepentingan
+                  </h2>
+                  
+                  <div className="space-y-4">
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+                              No
+                            </th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Situasi Potensial Benturan Kepentingan
+                            </th>
+                            <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+                              Ya
+                            </th>
+                            <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+                              Tidak
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {/* Row 1 */}
+                          <tr>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">1</td>
+                            <td className="px-6 py-4 text-sm text-gray-900">Memiliki hubungan keluarga dengan pihak yang terlibat</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
+                              <label className="inline-flex items-center">
+                                <input
+                                  type="radio"
+                                  name="keluarga"
+                                  value="ya"
+                                  checked={formData.keluarga === 'ya'}
+                                  onChange={() => setFormData({ ...formData, keluarga: 'ya' })}
+                                  className="form-radio h-4 w-4 text-primary-600"
+                                />
+                              </label>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
+                              <label className="inline-flex items-center">
+                                <input
+                                  type="radio"
+                                  name="keluarga"
+                                  value="tidak"
+                                  checked={formData.keluarga === 'tidak'}
+                                  onChange={() => setFormData({ ...formData, keluarga: 'tidak' })}
+                                  className="form-radio h-4 w-4 text-primary-600"
+                                />
+                              </label>
+                            </td>
+                          </tr>
+                          {/* Row 2 */}
+                          <tr>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2</td>
+                            <td className="px-6 py-4 text-sm text-gray-900">Memiliki hubungan keuangan atau kepemilikan bisnis dengan pihak yang terlibat</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
+                              <label className="inline-flex items-center">
+                                <input
+                                  type="radio"
+                                  name="keuangan"
+                                  value="ya"
+                                  checked={formData.keuangan === 'ya'}
+                                  onChange={() => setFormData({ ...formData, keuangan: 'ya' })}
+                                  className="form-radio h-4 w-4 text-primary-600"
+                                />
+                              </label>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
+                              <label className="inline-flex items-center">
+                                <input
+                                  type="radio"
+                                  name="keuangan"
+                                  value="tidak"
+                                  checked={formData.keuangan === 'tidak'}
+                                  onChange={() => setFormData({ ...formData, keuangan: 'tidak' })}
+                                  className="form-radio h-4 w-4 text-primary-600"
+                                />
+                              </label>
+                            </td>
+                          </tr>
+                          {/* Row 3 */}
+                          <tr>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">3</td>
+                            <td className="px-6 py-4 text-sm text-gray-900">Menerima hadiah, fasilitas, atau imbalan dari pihak yang berkepentingan</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
+                              <label className="inline-flex items-center">
+                                <input
+                                  type="radio"
+                                  name="hadiah"
+                                  value="ya"
+                                  checked={formData.hadiah === 'ya'}
+                                  onChange={() => setFormData({ ...formData, hadiah: 'ya' })}
+                                  className="form-radio h-4 w-4 text-primary-600"
+                                />
+                              </label>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
+                              <label className="inline-flex items-center">
+                                <input
+                                  type="radio"
+                                  name="hadiah"
+                                  value="tidak"
+                                  checked={formData.hadiah === 'tidak'}
+                                  onChange={() => setFormData({ ...formData, hadiah: 'tidak' })}
+                                  className="form-radio h-4 w-4 text-primary-600"
+                                />
+                              </label>
+                            </td>
+                          </tr>
+                          {/* Row 4 */}
+                          <tr>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">4</td>
+                            <td className="px-6 py-4 text-sm text-gray-900">Pernah bekerja di pihak penyedia barang/jasa terkait</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
+                              <label className="inline-flex items-center">
+                                <input
+                                  type="radio"
+                                  name="pekerjaan"
+                                  value="ya"
+                                  checked={formData.pekerjaan === 'ya'}
+                                  onChange={() => setFormData({ ...formData, pekerjaan: 'ya' })}
+                                  className="form-radio h-4 w-4 text-primary-600"
+                                />
+                              </label>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
+                              <label className="inline-flex items-center">
+                                <input
+                                  type="radio"
+                                  name="pekerjaan"
+                                  value="tidak"
+                                  checked={formData.pekerjaan === 'tidak'}
+                                  onChange={() => setFormData({ ...formData, pekerjaan: 'tidak' })}
+                                  className="form-radio h-4 w-4 text-primary-600"
+                                />
+                              </label>
+                            </td>
+                          </tr>
+                          {/* Row 5 */}
+                          <tr>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">5</td>
+                            <td className="px-6 py-4 text-sm text-gray-900">Memiliki kepentingan pribadi yang mempengaruhi objektivitas</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
+                              <label className="inline-flex items-center">
+                                <input
+                                  type="radio"
+                                  name="kepentingan"
+                                  value="ya"
+                                  checked={formData.kepentingan === 'ya'}
+                                  onChange={() => setFormData({ ...formData, kepentingan: 'ya' })}
+                                  className="form-radio h-4 w-4 text-primary-600"
+                                />
+                              </label>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
+                              <label className="inline-flex items-center">
+                                <input
+                                  type="radio"
+                                  name="kepentingan"
+                                  value="tidak"
+                                  checked={formData.kepentingan === 'tidak'}
+                                  onChange={() => setFormData({ ...formData, kepentingan: 'tidak' })}
+                                  className="form-radio h-4 w-4 text-primary-600"
+                                />
+                              </label>
+                            </td>
+                          </tr>
+                          {/* Row 6 */}
+                          <tr>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">6</td>
+                            <td className="px-6 py-4 text-sm text-gray-900">
+                              <div className="flex items-center">
+                                <span className="mr-2">Lainnya (sebutkan:)</span>
+                                <input
+                                  type="text"
+                                  placeholder="Jelaskan"
+                                  value={formData.lainnyaLainnya || ''}
+                                  onChange={(e) => setFormData({ ...formData, lainnyaLainnya: e.target.value })}
+                                  className="input-field flex-1"
+                                  disabled={formData.lainnya !== 'ya'}
+                                />
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
+                              <label className="inline-flex items-center">
+                                <input
+                                  type="radio"
+                                  name="lainnya"
+                                  value="ya"
+                                  checked={formData.lainnya === 'ya'}
+                                  onChange={() => setFormData({ ...formData, lainnya: 'ya' })}
+                                  className="form-radio h-4 w-4 text-primary-600"
+                                />
+                              </label>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
+                              <label className="inline-flex items-center">
+                                <input
+                                  type="radio"
+                                  name="lainnya"
+                                  value="tidak"
+                                  checked={formData.lainnya === 'tidak'}
+                                  onChange={() => setFormData({ ...formData, lainnya: 'tidak' })}
+                                  className="form-radio h-4 w-4 text-primary-600"
+                                />
+                              </label>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
                     </div>
                   </div>
                 </div>

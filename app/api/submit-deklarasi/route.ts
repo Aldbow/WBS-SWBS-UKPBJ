@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { appendToSheet } from '@/lib/googleSheets';
+import { SubmitDeklarasiRequest } from '@/types/deklarasi';
 
 export async function POST(request: NextRequest) {
   try {
-    const data = await request.json();
+    const data = await request.json() as SubmitDeklarasiRequest;
 
     // Generate ID
     const id = `DK-${Date.now()}`;
@@ -25,11 +26,19 @@ export async function POST(request: NextRequest) {
       data.namaLengkap || '',
       data.nipNik || '',
       data.jabatan || '',
+      data.peranKegiatan || '',
       data.satuanKerja || '',
       data.namaKegiatan || '',
       data.pihakTerkait || '',
       data.bentukHubungan || '',
       data.uraianDetail || '',
+      data.keluarga || '',
+      data.keuangan || '',
+      data.hadiah || '',
+      data.pekerjaan || '',
+      data.kepentingan || '',
+      data.lainnya || '',
+      data.lainnyaLainnya || '',
     ];
 
     await appendToSheet(sheetId, 'Sheet1!A:J', values);
