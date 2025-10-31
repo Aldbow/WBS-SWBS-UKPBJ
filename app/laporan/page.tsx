@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import DatePicker from '@/components/DatePicker';
 
 export default function LaporanPage() {
   const router = useRouter();
@@ -149,15 +150,12 @@ export default function LaporanPage() {
 
                 {/* Waktu Kejadian */}
                 <div>
-                  <label className="form-label">
-                    Waktu Kejadian <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="datetime-local"
-                    required
+                  <DatePicker
+                    label="Waktu Kejadian"
+                    required={true}
                     value={formData.waktuKejadian}
-                    onChange={(e) => setFormData({ ...formData, waktuKejadian: e.target.value })}
-                    className="input-field"
+                    onChange={(date) => setFormData({ ...formData, waktuKejadian: date })}
+                    placeholder="Pilih tanggal kejadian..."
                   />
                 </div>
 

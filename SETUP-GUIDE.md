@@ -135,6 +135,30 @@ https://docs.google.com/spreadsheets/d/[SHEET_ID_INI]/edit
    https://drive.google.com/drive/folders/[FOLDER_ID_INI]
    ```
 
+**PENTING - Konfigurasi Google Shared Drive (Diperlukan untuk Upload File)**:
+Karena service account tidak memiliki kuota penyimpanan pribadi, Anda perlu membuat Google Shared Drive agar upload file dapat berfungsi dengan benar. Ikuti langkah-langkah berikut jika Anda mengalami error seperti "Service Accounts do not have storage quota":
+
+1. Buka [Google Admin Console](https://admin.google.com)
+2. Pergi ke **Apps** → **Google Workspace** → **Drive and Docs** → **Shared drives**
+3. Klik **Create a shared drive**
+4. Beri nama: `SWBS-Shared-Drive` (atau nama pilihan Anda)
+5. Klik **Create**
+
+6. Setelah dibuat, klik kanan pada shared drive tersebut, pilih **Manage members**
+7. Tambahkan service account email sebagai member dengan role **Manager** (untuk akses penuh)
+8. Salin **Shared Drive ID** dari URL saat membuka shared drive tersebut:
+   ```
+   https://drive.google.com/drive/folders/[SHARED_DRIVE_ID_INI]#/folders/[FOLDER_ID_INI]
+   ```
+
+9. Update file `.env.local` untuk menggunakan Shared Drive ID daripada folder biasa:
+   ```env
+   # Ganti DRIVE_FOLDER_ID dengan Shared Drive ID
+   DRIVE_FOLDER_ID=[SHARED_DRIVE_ID_INI]
+   ```
+
+Catatan: Fitur Shared Drive hanya tersedia untuk Google Workspace (G Suite) yang merupakan bagian dari Google Workspace for Business/Education. Jika organisasi Anda tidak memiliki Google Workspace, alternatifnya adalah menggunakan akun OAuth dengan kuota penyimpanan pribadi.
+
 ---
 
 ## 3. Konfigurasi Proyek
@@ -390,27 +414,62 @@ vercel --prod
 2. Copy ID dari URL (antara `/d/` dan `/edit`)
 3. Update `SHEET_ID_LAPORAN` dan `SHEET_ID_DEKLARASI` di `.env.local`
 
-### Error: "Cannot upload file"
+### Error: "Cannot upload file" atau "Service Accounts do not have storage quota"
 
 **Penyebab:**
 - Folder ID salah
 - Service account belum punya akses ke folder
+- Service account tidak memiliki kuota penyimpanan (karena bukan akun personal)
 
 **Solusi:**
 1. Pastikan `DRIVE_FOLDER_ID` benar
 2. Share folder dengan service account email
 3. Pastikan permission adalah Editor
+4. **Untuk mengatasi masalah kuota penyimpanan**, Anda harus menggunakan Google Shared Drive:
+   - Pastikan organisasi Anda memiliki Google Workspace (G Suite)
+   - Buat Shared Drive di Google Admin Console
+   - Tambahkan service account sebagai member dengan role Manager
+   - Gunakan Shared Drive ID sebagai `DRIVE_FOLDER_ID` di `.env.local`
 
-### Error: "Login failed" atau "Invalid token"
+**Catatan:** Service account tidak memiliki kuota penyimpanan pribadi seperti akun Google biasa. Dengan menggunakan Shared Drive, file akan disimpan di kuota organisasi, bukan kuota pribadi service account.
+
+### Error: "Login failed" atau "Invalid token" atau "Admin login server configuration error"
 
 **Penyebab:**
 - Password hash salah
 - JWT secret tidak diset
+- Admin credentials tidak dikonfigurasi dengan benar
+- Environment variables tidak lengkap atau salah
 
 **Solusi:**
-1. Re-generate password hash
-2. Pastikan `ADMIN_PASSWORD_HASH` terisi di `.env.local`
-3. Pastikan `JWT_SECRET` terisi (minimal 32 karakter)
+1. **Pastikan semua environment variables telah dikonfigurasi dengan benar:**
+   ```env
+   ADMIN_USERNAME=admin
+   ADMIN_PASSWORD_HASH=$2a$10$26qOxp6kcNMfa49bpoEI1OPkbygqJhCvdczxptZQiqNRp8ZgQmpvS
+   JWT_SECRET=swbs-ukpbj-kemnaker-secret-jwt-key-2025-change-this-to-random-string
+   ```
+
+2. **Generate password hash baru:**
+   - Gunakan Node.js script atau online tool seperti sebelumnya
+   - Pastikan password hash diisi dengan benar di `.env.local`
+
+3. **Periksa format JWT_SECRET:**
+   - Pastikan JWT_SECRET adalah string acak yang panjangnya minimal 32 karakter
+   - Jangan gunakan contoh default dari `.env.local.example`
+
+4. **Restart server setelah perubahan:**
+   ```bash
+   # Hentikan server (jika sedang berjalan)
+   # Ctrl+C untuk stop proses
+   
+   # Restart server
+   npm run dev
+   ```
+
+5. **Pastikan tidak ada karakter khusus yang salah di .env.local:**
+   - Hindari menggunakan karakter seperti `#` di password atau secret
+   - Pastikan tidak ada spasi di awal/akhir value
+   - Pastikan tidak ada karakter spesial yang tidak di-escape dengan benar
 
 ### File Upload Gagal (size terlalu besar)
 
