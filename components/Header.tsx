@@ -16,7 +16,7 @@ export default function Header() {
               <span className="text-white font-bold text-xl">WBS</span>
             </div>
             <div className="hidden md:block">
-              <h1 className="text-lg font-bold text-gray-800">SWBS UKPBJ</h1>
+              <h1 className="text-lg font-bold text-gray-800">WBS UKPBJ</h1>
               <p className="text-xs text-gray-600">Kementerian Ketenagakerjaan</p>
             </div>
           </Link>
