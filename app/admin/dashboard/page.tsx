@@ -64,7 +64,7 @@ export default function AdminDashboard() {
       
       // Decode token to check if it's valid format
       try {
-        const decodedToken = Buffer.from(token, 'base64').toString('utf-8');
+        const decodedToken = atob(token); // Use atob for decoding
         const [adminId, timestamp] = decodedToken.split(':');
         
         if (!adminId || !timestamp) {
@@ -77,6 +77,13 @@ export default function AdminDashboard() {
         const tokenTime = parseInt(timestamp);
         const currentTime = Date.now();
         const maxAge = 8 * 60 * 60 * 1000; // 8 hours in milliseconds
+        
+        if (isNaN(tokenTime)) {
+          console.error('Invalid timestamp in token');
+          localStorage.removeItem('admin_token');
+          router.push('/admin');
+          return;
+        }
         
         if (currentTime - tokenTime > maxAge) {
           console.error('Token has expired');
@@ -142,6 +149,42 @@ export default function AdminDashboard() {
     const token = localStorage.getItem('admin_token');
     if (!token) {
       console.error('No admin token found in localStorage');
+      localStorage.removeItem('admin_token');
+      router.push('/admin');
+      return;
+    }
+
+    // Decode token to check if it's valid format
+    try {
+      const decodedToken = atob(token); // Use atob for decoding
+      const [adminId, timestamp] = decodedToken.split(':');
+      
+      if (!adminId || !timestamp) {
+        console.error('Invalid token format');
+        localStorage.removeItem('admin_token');
+        router.push('/admin');
+        return;
+      }
+      
+      const tokenTime = parseInt(timestamp);
+      const currentTime = Date.now();
+      const maxAge = 8 * 60 * 60 * 1000; // 8 hours in milliseconds
+      
+      if (isNaN(tokenTime)) {
+        console.error('Invalid timestamp in token');
+        localStorage.removeItem('admin_token');
+        router.push('/admin');
+        return;
+      }
+      
+      if (currentTime - tokenTime > maxAge) {
+        console.error('Token has expired');
+        localStorage.removeItem('admin_token');
+        router.push('/admin');
+        return;
+      }
+    } catch (decodeError) {
+      console.error('Token decode error:', decodeError);
       localStorage.removeItem('admin_token');
       router.push('/admin');
       return;
@@ -323,10 +366,6 @@ export default function AdminDashboard() {
                 <option value="Selesai">Selesai</option>
               </select>
             )}
-            <div className="text-sm text-gray-600 flex items-center">
-              {activeTab === 'laporan' && `Laporan ditampilkan: ${filteredLaporan.length}`}
-              {activeTab === 'deklarasi' && `Deklarasi ditampilkan: ${filteredDeklarasi.length}`}
-            </div>
           </div>
 
           {loading ? (

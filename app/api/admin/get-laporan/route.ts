@@ -24,6 +24,10 @@ function verifyToken(request: NextRequest): boolean {
       const currentTime = Date.now();
       const maxAge = 8 * 60 * 60 * 1000; // 8 hours in milliseconds
       
+      if (isNaN(tokenTime)) {
+        return false; // Invalid timestamp
+      }
+      
       if (currentTime - tokenTime > maxAge) {
         return false; // Token expired
       }
@@ -61,7 +65,7 @@ export async function GET(request: NextRequest) {
     }
 
     console.log('Fetching laporan data from Google Sheets...');
-    const rows = await getSheetData(sheetId, 'Sheet1!A2:H');
+    const rows = await getSheetData(sheetId, 'SWBS-Laporan-Pelanggaran!A2:H');
     console.log(`Fetched ${rows.length} rows of laporan data`);
 
     const data = rows.map((row: any[], index: number) => ({

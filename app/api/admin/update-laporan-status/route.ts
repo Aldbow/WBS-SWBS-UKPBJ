@@ -24,6 +24,10 @@ function verifyToken(request: NextRequest): boolean {
       const currentTime = Date.now();
       const maxAge = 8 * 60 * 60 * 1000; // 8 hours in milliseconds
       
+      if (isNaN(tokenTime)) {
+        return false; // Invalid timestamp
+      }
+      
       if (currentTime - tokenTime > maxAge) {
         return false; // Token expired
       }
@@ -73,7 +77,7 @@ export async function PUT(request: NextRequest) {
     }
     
     // Get all data to find the row with the report ID
-    const rows = await getSheetData(sheetId, 'Sheet1!A:H');
+    const rows = await getSheetData(sheetId, 'SWBS-Laporan-Pelanggaran!A:H');
     
     let targetRowIndex = -1;
     for (let i = 0; i < rows.length; i++) {
@@ -96,7 +100,7 @@ export async function PUT(request: NextRequest) {
     updatedRow[7] = newStatus; // Status is in column H
     
     // Update the specific row in the Google Sheet
-    const updateRange = `Sheet1!A${targetRowIndex + 2}:H${targetRowIndex + 2}`; // +2 because we start from row 2 (row 1 has headers)
+    const updateRange = `SWBS-Laporan-Pelanggaran!A${targetRowIndex + 2}:H${targetRowIndex + 2}`; // +2 because we start from row 2 (row 1 has headers)
     await updateSheetData(sheetId, updateRange, [updatedRow]);
     
     console.log(`Successfully updated status for report ${reportId} to ${newStatus}`);
