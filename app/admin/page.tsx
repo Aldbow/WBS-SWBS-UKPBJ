@@ -27,11 +27,18 @@ export default function AdminLoginPage() {
         localStorage.setItem('admin_token', data.token);
         router.push('/admin/dashboard');
       } else {
-        setError(data.error || 'Login gagal. Silakan periksa username dan password Anda.');
+        // Provide more specific error messages
+        let errorMessage = data.error || 'Login gagal. Silakan periksa username dan password Anda.';
+        if (data.error && data.error.includes('Server configuration error')) {
+          errorMessage = 'Konfigurasi server bermasalah. Silakan periksa apakah environment variable sudah diatur dengan benar.';
+        } else if (data.error === 'Invalid credentials') {
+          errorMessage = 'Username atau password salah. Silakan coba lagi.';
+        }
+        setError(errorMessage);
       }
     } catch (error) {
       console.error('Error:', error);
-      setError('Terjadi kesalahan. Silakan coba lagi.');
+      setError('Terjadi kesalahan koneksi. Silakan periksa koneksi internet Anda dan coba lagi.');
     } finally {
       setLoading(false);
     }

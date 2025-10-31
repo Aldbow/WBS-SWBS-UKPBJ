@@ -37,6 +37,7 @@ export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [statusFilter, setStatusFilter] = useState('all'); // for filtering reports by status
+  const [error, setError] = useState<string | null>(null); // for displaying errors
 
   useEffect(() => {
     const token = localStorage.getItem('admin_token');
@@ -49,25 +50,84 @@ export default function AdminDashboard() {
 
   const fetchData = async () => {
     setLoading(true);
+    setError(null); // Reset error state
     try {
       const token = localStorage.getItem('admin_token');
+      
+      // Verify token before making requests
+      if (!token) {
+        console.error('No admin token found in localStorage');
+        localStorage.removeItem('admin_token');
+        router.push('/admin');
+        return;
+      }
+      
+      // Decode token to check if it's valid format
+      try {
+        const decodedToken = Buffer.from(token, 'base64').toString('utf-8');
+        const [adminId, timestamp] = decodedToken.split(':');
+        
+        if (!adminId || !timestamp) {
+          console.error('Invalid token format');
+          localStorage.removeItem('admin_token');
+          router.push('/admin');
+          return;
+        }
+        
+        const tokenTime = parseInt(timestamp);
+        const currentTime = Date.now();
+        const maxAge = 8 * 60 * 60 * 1000; // 8 hours in milliseconds
+        
+        if (currentTime - tokenTime > maxAge) {
+          console.error('Token has expired');
+          localStorage.removeItem('admin_token');
+          router.push('/admin');
+          return;
+        }
+      } catch (decodeError) {
+        console.error('Token decode error:', decodeError);
+        localStorage.removeItem('admin_token');
+        router.push('/admin');
+        return;
+      }
       
       const [laporanRes, deklarasiRes] = await Promise.all([
         fetch('/api/admin/get-laporan', { headers: { 'Authorization': `Bearer ${token}` }}),
         fetch('/api/admin/get-deklarasi', { headers: { 'Authorization': `Bearer ${token}` }})
       ]);
 
-      if (laporanRes.ok) {
-        const data = await laporanRes.json();
-        setLaporanData(data.data || []);
+      if (!laporanRes.ok) {
+        const laporanError = await laporanRes.json();
+        console.error('Laporan API error:', laporanError);
+        if (laporanRes.status === 401) {
+          // Token might be expired, redirect to login
+          localStorage.removeItem('admin_token');
+          router.push('/admin');
+          return;
+        }
+        throw new Error(laporanError.error || 'Gagal memuat data laporan');
       }
 
-      if (deklarasiRes.ok) {
-        const data = await deklarasiRes.json();
-        setDeklarasiData(data.data || []);
+      if (!deklarasiRes.ok) {
+        const deklarasiError = await deklarasiRes.json();
+        console.error('Deklarasi API error:', deklarasiError);
+        if (deklarasiRes.status === 401) {
+          // Token might be expired, redirect to login
+          localStorage.removeItem('admin_token');
+          router.push('/admin');
+          return;
+        }
+        throw new Error(deklarasiError.error || 'Gagal memuat data deklarasi');
       }
-    } catch (error) {
+
+      const laporanData = await laporanRes.json();
+      const deklarasiData = await deklarasiRes.json();
+
+      setLaporanData(laporanData.data || []);
+      setDeklarasiData(deklarasiData.data || []);
+    } catch (error: any) {
       console.error('Error fetching data:', error);
+      setError(error.message || 'Terjadi kesalahan saat memuat data. Silakan coba lagi nanti.');
     } finally {
       setLoading(false);
     }
@@ -80,7 +140,12 @@ export default function AdminDashboard() {
 
   const updateReportStatus = async (reportId: string, newStatus: string) => {
     const token = localStorage.getItem('admin_token');
-    if (!token) return;
+    if (!token) {
+      console.error('No admin token found in localStorage');
+      localStorage.removeItem('admin_token');
+      router.push('/admin');
+      return;
+    }
 
     setIsUpdatingStatus(true);
     try {
@@ -103,7 +168,14 @@ export default function AdminDashboard() {
         alert('Status laporan berhasil diperbarui!');
       } else {
         const errorData = await response.json();
-        alert(`Gagal memperbarui status: ${errorData.error || 'Unknown error'}`);
+        let errorMessage = errorData.error || 'Unknown error';
+        if (errorMessage.includes('Unauthorized') || response.status === 401) {
+          // Token might be expired, redirect to login
+          localStorage.removeItem('admin_token');
+          router.push('/admin');
+          return;
+        }
+        alert(`Gagal memperbarui status: ${errorMessage}`);
       }
     } catch (error) {
       console.error('Error updating report status:', error);
@@ -141,6 +213,19 @@ export default function AdminDashboard() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
+        {/* Error Banner */}
+        {error && (
+          <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded">
+            <p>{error}</p>
+            <button 
+              onClick={() => { setError(null); fetchData(); }} 
+              className="mt-2 text-sm bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
+            >
+              Muat Ulang Data
+            </button>
+          </div>
+        )}
+
         {/* Statistics */}
         <div className="grid md:grid-cols-2 gap-6 mb-8">
           <div className="card bg-gradient-to-br from-primary-500 to-primary-600 text-white">
