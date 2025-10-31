@@ -16,34 +16,24 @@ export default function LaporanPage() {
     subjek: '',
     isiLaporan: '',
   });
-  const [files, setFiles] = useState<FileList | null>(null);
+  // const [files, setFiles] = useState<FileList | null>(null); // Disabled for non-Google Workspace setup
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const formDataToSend = new FormData();
-      formDataToSend.append('kategori', formData.kategori);
-      formDataToSend.append('waktuKejadian', formData.waktuKejadian);
-      formDataToSend.append('subjek', formData.subjek);
-      formDataToSend.append('isiLaporan', formData.isiLaporan);
-      
-      if (files) {
-        Array.from(files).forEach((file) => {
-          formDataToSend.append('files', file);
-        });
-      }
-
       const response = await fetch('/api/submit-laporan', {
         method: 'POST',
-        body: formDataToSend,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
       });
 
       if (response.ok) {
         setSuccess(true);
         setFormData({ kategori: '', waktuKejadian: '', subjek: '', isiLaporan: '' });
-        setFiles(null);
       } else {
         alert('Terjadi kesalahan. Silakan coba lagi.');
       }
@@ -191,33 +181,6 @@ export default function LaporanPage() {
                     className="input-field"
                   />
                   <p className="text-sm text-gray-500 mt-1">{formData.isiLaporan.length}/5000 karakter</p>
-                </div>
-
-                {/* Bukti Laporan */}
-                <div>
-                  <label className="form-label">
-                    Bukti Laporan (Opsional, disarankan)
-                  </label>
-                  <input
-                    type="file"
-                    multiple
-                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx,.mp3,.mp4"
-                    onChange={(e) => setFiles(e.target.files)}
-                    className="input-field"
-                  />
-                  <p className="text-sm text-gray-500 mt-1">
-                    Format yang didukung: PDF, JPG, PNG, DOC, DOCX, XLS, XLSX, MP3, MP4. Maks 25MB total.
-                  </p>
-                  {files && (
-                    <div className="mt-2">
-                      <p className="text-sm font-semibold text-gray-700">File terpilih:</p>
-                      <ul className="text-sm text-gray-600 list-disc list-inside">
-                        {Array.from(files).map((file, idx) => (
-                          <li key={idx}>{file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
                 </div>
 
                 {/* Submit Button */}

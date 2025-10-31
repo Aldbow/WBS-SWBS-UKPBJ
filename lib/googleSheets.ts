@@ -49,3 +49,24 @@ export const getSheetData = async (sheetId: string, range: string) => {
     throw error;
   }
 };
+
+export const updateSheetData = async (sheetId: string, range: string, values: any[][]) => {
+  try {
+    const auth = getAuthClient();
+    const sheets = google.sheets({ version: 'v4', auth });
+
+    const response = await sheets.spreadsheets.values.update({
+      spreadsheetId: sheetId,
+      range,
+      valueInputOption: 'USER_ENTERED',
+      requestBody: {
+        values,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error('Error updating sheet data:', error);
+    throw error;
+  }
+};

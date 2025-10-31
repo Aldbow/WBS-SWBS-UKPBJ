@@ -11,6 +11,7 @@ interface LaporanData {
   waktuKejadian: string;
   isiLaporan: string;
   linkBukti: string;
+  status: string;
 }
 
 interface DeklarasiData {
@@ -34,6 +35,8 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState<LaporanData | DeklarasiData | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [statusFilter, setStatusFilter] = useState('all'); // for filtering reports by status
 
   useEffect(() => {
     const token = localStorage.getItem('admin_token');
@@ -75,9 +78,46 @@ export default function AdminDashboard() {
     router.push('/admin');
   };
 
+  const updateReportStatus = async (reportId: string, newStatus: string) => {
+    const token = localStorage.getItem('admin_token');
+    if (!token) return;
+
+    setIsUpdatingStatus(true);
+    try {
+      const response = await fetch('/api/admin/update-laporan-status', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ reportId, newStatus })
+      });
+
+      if (response.ok) {
+        // Update the status in the local state
+        setLaporanData(prevData => 
+          prevData.map(report => 
+            report.id === reportId ? { ...report, status: newStatus } : report
+          )
+        );
+        alert('Status laporan berhasil diperbarui!');
+      } else {
+        const errorData = await response.json();
+        alert(`Gagal memperbarui status: ${errorData.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error updating report status:', error);
+      alert('Terjadi kesalahan saat memperbarui status laporan.');
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  };
+
   const filteredLaporan = laporanData.filter(item =>
-    item.subjek?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.kategori?.toLowerCase().includes(searchTerm.toLowerCase())
+    (item.subjek?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.kategori?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.status?.toLowerCase().includes(searchTerm.toLowerCase())) &&
+    (statusFilter === 'all' || item.status === statusFilter)
   );
 
   const filteredDeklarasi = deklarasiData.filter(item =>
@@ -123,6 +163,33 @@ export default function AdminDashboard() {
           </div>
         </div>
 
+        {/* Status Distribution */}
+        {activeTab === 'laporan' && (
+          <div className="card mb-8">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Distribusi Status Laporan</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+                <p className="text-red-800 font-medium">Baru</p>
+                <p className="text-2xl font-bold text-red-600 mt-1">
+                  {laporanData.filter(item => item.status === 'Baru').length}
+                </p>
+              </div>
+              <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                <p className="text-yellow-800 font-medium">Diproses</p>
+                <p className="text-2xl font-bold text-yellow-600 mt-1">
+                  {laporanData.filter(item => item.status === 'Diproses').length}
+                </p>
+              </div>
+              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                <p className="text-green-800 font-medium">Selesai</p>
+                <p className="text-2xl font-bold text-green-600 mt-1">
+                  {laporanData.filter(item => item.status === 'Selesai').length}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Tabs */}
         <div className="card">
           <div className="border-b border-gray-200 mb-6">
@@ -150,15 +217,31 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* Search */}
-          <div className="mb-6">
+          {/* Search and Filters */}
+          <div className="mb-6 flex flex-col md:flex-row gap-4">
             <input
               type="text"
               placeholder="Cari data..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="input-field max-w-md"
+              className="input-field flex-grow"
             />
+            {activeTab === 'laporan' && (
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="input-field"
+              >
+                <option value="all">Semua Status</option>
+                <option value="Baru">Baru</option>
+                <option value="Diproses">Diproses</option>
+                <option value="Selesai">Selesai</option>
+              </select>
+            )}
+            <div className="text-sm text-gray-600 flex items-center">
+              {activeTab === 'laporan' && `Laporan ditampilkan: ${filteredLaporan.length}`}
+              {activeTab === 'deklarasi' && `Deklarasi ditampilkan: ${filteredDeklarasi.length}`}
+            </div>
           </div>
 
           {loading ? (
@@ -181,6 +264,7 @@ export default function AdminDashboard() {
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kategori</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Subjek</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kejadian</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
                         </tr>
                       </thead>
@@ -195,6 +279,23 @@ export default function AdminDashboard() {
                             </td>
                             <td className="px-4 py-3 text-sm text-gray-900">{item.subjek}</td>
                             <td className="px-4 py-3 text-sm text-gray-600">{item.waktuKejadian}</td>
+                            <td className="px-4 py-3 text-sm">
+                              <select
+                                value={item.status}
+                                onChange={(e) => updateReportStatus(item.id, e.target.value)}
+                                disabled={isUpdatingStatus}
+                                className={`px-2 py-1 rounded-full text-xs ${
+                                  item.status === 'Baru' ? 'bg-red-100 text-red-800' :
+                                  item.status === 'Diproses' ? 'bg-yellow-100 text-yellow-800' :
+                                  item.status === 'Selesai' ? 'bg-green-100 text-green-800' :
+                                  'bg-gray-100 text-gray-800'
+                                } ${isUpdatingStatus ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                              >
+                                <option value="Baru">Baru</option>
+                                <option value="Diproses">Diproses</option>
+                                <option value="Selesai">Selesai</option>
+                              </select>
+                            </td>
                             <td className="px-4 py-3 text-sm">
                               <button
                                 onClick={() => setSelectedItem(item)}
@@ -272,8 +373,8 @@ export default function AdminDashboard() {
                 /* Laporan Detail */
                 <div className="space-y-4">
                   <div>
-                    <label className="text-sm font-semibold text-gray-700">Pelapor</label>
-                    <p className="text-gray-900 mt-1">Anonim</p>
+                    <label className="text-sm font-semibold text-gray-700">ID Laporan</label>
+                    <p className="text-gray-900 mt-1">{selectedItem.id}</p>
                   </div>
                   <div>
                     <label className="text-sm font-semibold text-gray-700">Waktu Pelaporan</label>
@@ -298,6 +399,19 @@ export default function AdminDashboard() {
                   <div>
                     <label className="text-sm font-semibold text-gray-700">Isi Laporan</label>
                     <p className="text-gray-900 mt-1 whitespace-pre-wrap">{selectedItem.isiLaporan}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-semibold text-gray-700">Status</label>
+                    <p className="mt-1">
+                      <span className={`px-3 py-1 rounded-full text-sm ${
+                        selectedItem.status === 'Baru' ? 'bg-red-100 text-red-800' :
+                        selectedItem.status === 'Diproses' ? 'bg-yellow-100 text-yellow-800' :
+                        selectedItem.status === 'Selesai' ? 'bg-green-100 text-green-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {selectedItem.status}
+                      </span>
+                    </p>
                   </div>
                   {selectedItem.linkBukti && (
                     <div>
@@ -324,6 +438,10 @@ export default function AdminDashboard() {
                   <div className="border-l-4 border-primary-500 pl-4 mb-6">
                     <h4 className="font-semibold text-gray-900 mb-4">Data Diri</h4>
                     <div className="space-y-3">
+                      <div>
+                        <label className="text-sm font-semibold text-gray-700">ID Deklarasi</label>
+                        <p className="text-gray-900 mt-1">{selectedItem.id}</p>
+                      </div>
                       <div>
                         <label className="text-sm font-semibold text-gray-700">Nama Lengkap</label>
                         <p className="text-gray-900 mt-1">{selectedItem.namaLengkap}</p>

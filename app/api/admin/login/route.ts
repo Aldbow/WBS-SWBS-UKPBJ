@@ -1,33 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { getAdminById } from '@/lib/google-sheets';
 
 export async function POST(request: NextRequest) {
   try {
     const { username, password } = await request.json();
 
-    // Validate credentials
-    const adminUsername = process.env.ADMIN_USERNAME;
-    const adminPasswordHash = process.env.ADMIN_PASSWORD_HASH;
+    // Validate JWT secret
     const jwtSecret = process.env.JWT_SECRET;
-
-    if (!adminUsername || !adminPasswordHash || !jwtSecret) {
+    if (!jwtSecret) {
       return NextResponse.json(
         { error: 'Server configuration error' },
         { status: 500 }
       );
     }
 
-    if (username !== adminUsername) {
+    // Get admin credentials from Google Sheets
+    const admin = await getAdminById(username);
+    
+    if (!admin) {
       return NextResponse.json(
         { error: 'Invalid credentials' },
         { status: 401 }
       );
     }
 
-    const isValidPassword = await bcrypt.compare(password, adminPasswordHash);
-
-    if (!isValidPassword) {
+    // Direct password comparison (plain text)
+    if (password !== admin.password) {
       return NextResponse.json(
         { error: 'Invalid credentials' },
         { status: 401 }
@@ -36,7 +35,7 @@ export async function POST(request: NextRequest) {
 
     // Generate JWT token
     const token = jwt.sign(
-      { username, role: 'admin' },
+      { id: admin.id, role: 'admin' },
       jwtSecret,
       { expiresIn: '8h' }
     );
@@ -44,7 +43,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       token,
-      username,
+      username: admin.id,
     });
 
   } catch (error) {

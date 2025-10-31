@@ -113,6 +113,42 @@ Untuk kedua sheets:
 5. **UNCHECK** "Notify people"
 6. Klik **Share**
 
+#### Pastikan Nama Sheet dan Header Kolom Sudah Benar
+
+Pastikan sheet Anda memiliki nama dan header yang benar:
+
+**Sheet Laporan Pelanggaran:**
+- Nama sheet: `SWBS-Laporan-Pelanggaran`
+- A1: ID
+- B1: WaktuPelaporan
+- C1: Kategori
+- D1: WaktuKejadian
+- E1: Subjek
+- F1: IsiLaporan
+- G1: LinkBukti (kosong karena fitur upload dinonaktifkan)
+- H1: Status
+
+**Sheet Deklarasi Benturan Kepentingan:**
+- Nama sheet: `SWBS-Deklarasi-Benturan-Kepentingan`
+- A1: ID
+- B1: WaktuKirim
+- C1: NamaLengkap
+- D1: NIP/NIK
+- E1: Jabatan
+- F1: PeranKegiatan
+- G1: SatuanKerja
+- H1: NamaKegiatan
+- I1: PihakTerkait
+- J1: BentukHubungan
+- K1: UraianDetail
+- L1: Keluarga
+- M1: Keuangan
+- N1: Hadiah
+- O1: Pekerjaan
+- P1: Kepentingan
+- Q1: Lainnya
+- R1: LainnyaLainnya
+
 #### Ambil Sheet ID
 
 Untuk kedua sheets, copy ID dari URL:
@@ -157,7 +193,29 @@ Karena service account tidak memiliki kuota penyimpanan pribadi, Anda perlu memb
    DRIVE_FOLDER_ID=[SHARED_DRIVE_ID_INI]
    ```
 
-Catatan: Fitur Shared Drive hanya tersedia untuk Google Workspace (G Suite) yang merupakan bagian dari Google Workspace for Business/Education. Jika organisasi Anda tidak memiliki Google Workspace, alternatifnya adalah menggunakan akun OAuth dengan kuota penyimpanan pribadi.
+Catatan: Fitur Shared Drive hanya tersedia untuk Google Workspace (G Suite) yang merupakan bagian dari Google Workspace for Business/Education. Jika organisasi Anda tidak memiliki Google Workspace atau tidak memiliki akses ke Admin Console, ada beberapa alternatif lain:
+
+**Alternatif 1: Gunakan akun Google pribadi sebagai service account**
+1. Ganti service account dengan akun Google pribadi (akun yang memiliki kuota Drive)
+2. Aktifkan API Google Drive dan Sheets untuk akun tersebut
+3. Bagikan sheet dan folder dengan akun pribadi tersebut
+
+**Alternatif 2: Nonaktifkan upload file bukti (sudah diterapkan)**
+Fitur upload bukti telah dinonaktifkan dari formulir laporan untuk menghindari masalah kuota Google Drive Service Account.
+
+**Alternatif 3: Gunakan layanan penyimpanan eksternal**
+1. Gunakan layanan seperti AWS S3, Google Cloud Storage, atau layanan penyimpanan lainnya
+2. Perbarui logika upload di `lib/googleDrive.ts` untuk menggunakan layanan tersebut
+3. Simpan URL file di Google Sheets sebagai referensi
+
+**Catatan:** Alternatif paling mudah jika Anda tidak punya akses Admin adalah menonaktifkan fitur upload file bukti atau menggunakan akun Google pribadi.
+
+**Cara menonaktifkan fitur upload file bukti:**
+1. Buka file `app/laporan/page.tsx`
+2. Cari komponen file upload (bagian yang berisi input type="file")
+3. Anda bisa mengkomentari atau menghapus bagian tersebut
+4. Juga pastikan untuk menghapus referensi ke `files` di fungsi `handleSubmit`
+5. Jika Anda menggunakan API untuk upload ke Google Drive, Anda juga perlu mengedit file `app/api/submit-laporan/route.ts` agar tidak mencoba upload file jika tidak ada
 
 ---
 
@@ -215,11 +273,25 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 1. Buka file JSON service account
 2. Copy value dari field `private_key`
 3. Paste ke `.env.local`
-4. **PENTING**: Pastikan menggunakan `\n` untuk newline, bukan real newline
+4. **PENTING**: Pastikan menggunakan `\n` untuk setiap baris, bukan real newline (enter)
+
+**Cara benar mengkonversi private key ke format .env:**
+- Salin nilai dari field `private_key` di file JSON
+- Ganti setiap baris baru dengan `\n`
+- Tambahkan tanda kutip di awal dan akhir
+- Jangan ada spasi tambahan di awal atau akhir
 
 Contoh yang BENAR:
 ```env
-GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC...\n-----END PRIVATE KEY-----\n"
+GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC7Z4...\n-----END PRIVATE KEY-----\n"
+```
+
+Contoh yang SALAH (akan menyebabkan error):
+```env
+# JANGAN GINI - ini tidak akan bekerja
+GOOGLE_PRIVATE_KEY=-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC...
+-----END PRIVATE KEY-----
 ```
 
 ---
@@ -262,6 +334,30 @@ node generate-hash.js
 ```env
 ADMIN_PASSWORD_HASH=$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy
 ```
+
+### Verifikasi Konfigurasi
+
+Setelah mengisi semua environment variables, lakukan verifikasi berikut:
+
+1. **Pastikan tidak ada spasi di sekitar `=`**:
+   ```env
+   # BENAR
+   SHEET_ID_LAPORAN=1abc...xyz
+   
+   # SALAH
+   SHEET_ID_LAPORAN = 1abc...xyz
+   ```
+
+2. **Periksa kembali penamaan variabel**:
+   - Nama variabel harus persis: `GOOGLE_SERVICE_ACCOUNT_EMAIL`, `GOOGLE_PRIVATE_KEY`, `SHEET_ID_LAPORAN`, dll.
+   - Tidak boleh ada huruf kecil/salah ketik
+
+3. **Pastikan tidak ada karakter khusus yang tidak di-escape**:
+   - Jika password admin atau JWT_SECRET mengandung karakter khusus seperti `$`, `{`, `}`, pastikan diapit tanda kutip
+   
+4. **Restart server setelah perubahan .env.local**:
+   - Hentikan server (Ctrl+C)
+   - Jalankan kembali: `npm run dev`
 
 ---
 
@@ -433,6 +529,11 @@ vercel --prod
 
 **Catatan:** Service account tidak memiliki kuota penyimpanan pribadi seperti akun Google biasa. Dengan menggunakan Shared Drive, file akan disimpan di kuota organisasi, bukan kuota pribadi service account.
 
+**Jika Anda tidak memiliki akses ke Google Admin Console:**
+- Gunakan akun Google pribadi sebagai service account (akun dengan kuota Drive)
+- Fitur upload file bukti telah dinonaktifkan dari formulir laporan
+- Atau gunakan layanan penyimpanan eksternal seperti AWS S3 (memerlukan modifikasi lebih lanjut)
+
 ### Error: "Login failed" atau "Invalid token" atau "Admin login server configuration error"
 
 **Penyebab:**
@@ -496,6 +597,41 @@ rm package-lock.json
 # Install ulang
 npm install
 ```
+
+### Error saat Submit Laporan/Deklarasi
+
+**Penyebab Umum:**
+- Service account tidak memiliki akses ke Google Sheets
+- Format `GOOGLE_PRIVATE_KEY` salah
+- Sheet ID tidak valid
+- Service account email salah
+
+**Solusi:**
+1. **Verifikasi Service Account Access:**
+   - Pastikan email service account (dari field `client_email` di file JSON) memiliki akses Editor ke:
+     - Sheet Laporan: `SWBS-Laporan-Pelanggaran`
+     - Sheet Deklarasi: `SWBS-Deklarasi-Benturan-Kepentingan`
+     - (Jika fitur upload aktif) Folder Drive: `SWBS-Bukti-Laporan`
+
+2. **Periksa Format GOOGLE_PRIVATE_KEY:**
+   - Pastikan menggunakan `\n` untuk setiap baris, bukan baris baru yang sebenarnya
+   - Tidak boleh ada spasi tambahan di awal/akhir
+   - Harus diapit dengan tanda kutip ganda
+   - Contoh benar:
+     ```env
+     GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC...\n-----END PRIVATE KEY-----\n"
+     ```
+
+3. **Verifikasi Sheet ID:**
+   - Dapatkan kembali Sheet ID dari URL: `https://docs.google.com/spreadsheets/d/[SHEET_ID]/edit`
+   - Pastikan ID tidak mengandung karakter tambahan
+
+4. **Verifikasi Service Account Email:**
+   - Dapatkan kembali dari field `client_email` di file JSON service account
+
+5. **Periksa apakah sheets sudah memiliki header:**
+   - Untuk sheet Laporan: kolom A1-H1 harus berisi header yang benar
+   - Untuk sheet Deklarasi: kolom A1-J1 harus berisi header yang benar
 
 ### Vercel Build Failed
 

@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
       data.lainnyaLainnya || '',
     ];
 
-    await appendToSheet(sheetId, 'Sheet1!A:J', values);
+    await appendToSheet(sheetId, 'SWBS-Deklarasi-Benturan-Kepentingan!A:R', values);
 
     return NextResponse.json({ 
       success: true,
