@@ -24,7 +24,7 @@ export default function DeklarasiPage() {
     nipNik: '',
     jabatan: '',
     peranKegiatan: '',
-    satuanKerja: 'UKPBJ Kementerian Ketenagakerjaan',
+    satuanKerja: '',
     namaKegiatan: '',
     pihakTerkait: '',
     bentukHubungan: '',
@@ -296,7 +296,7 @@ export default function DeklarasiPage() {
                 {/* Bagian B2: Situasi Potensial Benturan Kepentingan */}
                 <div className="border-l-4 border-yellow-600 pl-6">
                   <h2 className="text-xl font-bold text-gray-800 mb-4">
-                    Bagian B2: Situasi Potensial Benturan Kepentingan
+                    Bagian C: Situasi Potensial Benturan Kepentingan
                   </h2>
                   
                   <div className="space-y-4">
@@ -319,38 +319,9 @@ export default function DeklarasiPage() {
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                          {/* Row 1 */}
-                          <tr>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">1</td>
-                            <td className="px-6 py-4 text-sm text-gray-900">Memiliki hubungan keluarga dengan pihak yang terlibat</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
-                              <label className="inline-flex items-center">
-                                <input
-                                  type="radio"
-                                  name="keluarga"
-                                  value="ya"
-                                  checked={formData.keluarga === 'ya'}
-                                  onChange={() => setFormData({ ...formData, keluarga: 'ya' })}
-                                  className="form-radio h-4 w-4 text-primary-600"
-                                />
-                              </label>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
-                              <label className="inline-flex items-center">
-                                <input
-                                  type="radio"
-                                  name="keluarga"
-                                  value="tidak"
-                                  checked={formData.keluarga === 'tidak'}
-                                  onChange={() => setFormData({ ...formData, keluarga: 'tidak' })}
-                                  className="form-radio h-4 w-4 text-primary-600"
-                                />
-                              </label>
-                            </td>
-                          </tr>
                           {/* Row 2 */}
                           <tr>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">1</td>
                             <td className="px-6 py-4 text-sm text-gray-900">Memiliki hubungan keuangan atau kepemilikan bisnis dengan pihak yang terlibat</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
                               <label className="inline-flex items-center">
@@ -379,7 +350,7 @@ export default function DeklarasiPage() {
                           </tr>
                           {/* Row 3 */}
                           <tr>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">3</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2</td>
                             <td className="px-6 py-4 text-sm text-gray-900">Menerima hadiah, fasilitas, atau imbalan dari pihak yang berkepentingan</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
                               <label className="inline-flex items-center">
@@ -408,7 +379,7 @@ export default function DeklarasiPage() {
                           </tr>
                           {/* Row 4 */}
                           <tr>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">4</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">3</td>
                             <td className="px-6 py-4 text-sm text-gray-900">Pernah bekerja di pihak penyedia barang/jasa terkait</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
                               <label className="inline-flex items-center">
@@ -437,7 +408,7 @@ export default function DeklarasiPage() {
                           </tr>
                           {/* Row 5 */}
                           <tr>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">5</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">4</td>
                             <td className="px-6 py-4 text-sm text-gray-900">Memiliki kepentingan pribadi yang mempengaruhi objektivitas</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
                               <label className="inline-flex items-center">
@@ -464,47 +435,6 @@ export default function DeklarasiPage() {
                               </label>
                             </td>
                           </tr>
-                          {/* Row 6 */}
-                          <tr>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">6</td>
-                            <td className="px-6 py-4 text-sm text-gray-900">
-                              <div className="flex items-center">
-                                <span className="mr-2">Lainnya (sebutkan:)</span>
-                                <input
-                                  type="text"
-                                  placeholder="Jelaskan"
-                                  value={formData.lainnyaLainnya || ''}
-                                  onChange={(e) => setFormData({ ...formData, lainnyaLainnya: e.target.value })}
-                                  className="input-field flex-1"
-                                  disabled={formData.lainnya !== 'ya'}
-                                />
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
-                              <label className="inline-flex items-center">
-                                <input
-                                  type="radio"
-                                  name="lainnya"
-                                  value="ya"
-                                  checked={formData.lainnya === 'ya'}
-                                  onChange={() => setFormData({ ...formData, lainnya: 'ya' })}
-                                  className="form-radio h-4 w-4 text-primary-600"
-                                />
-                              </label>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
-                              <label className="inline-flex items-center">
-                                <input
-                                  type="radio"
-                                  name="lainnya"
-                                  value="tidak"
-                                  checked={formData.lainnya === 'tidak'}
-                                  onChange={() => setFormData({ ...formData, lainnya: 'tidak' })}
-                                  className="form-radio h-4 w-4 text-primary-600"
-                                />
-                              </label>
-                            </td>
-                          </tr>
                         </tbody>
                       </table>
                     </div>
@@ -513,7 +443,7 @@ export default function DeklarasiPage() {
 
                 {/* Bagian C: Pernyataan */}
                 <div className="border-l-4 border-red-500 pl-6">
-                  <h2 className="text-xl font-bold text-gray-800 mb-4">Bagian C: Pernyataan</h2>
+                  <h2 className="text-xl font-bold text-gray-800 mb-4">Bagian D: Pernyataan</h2>
                   
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <label className="flex items-start cursor-pointer">
