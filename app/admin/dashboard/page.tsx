@@ -11,7 +11,7 @@ interface LaporanData {
   waktuKejadian: string;
   isiLaporan: string;
   linkBukti: string;
-  status: string;
+
 }
 
 interface DeklarasiData {
@@ -35,8 +35,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState<LaporanData | DeklarasiData | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
-  const [statusFilter, setStatusFilter] = useState('all'); // for filtering reports by status
+
   const [error, setError] = useState<string | null>(null); // for displaying errors
 
   useEffect(() => {
@@ -145,94 +144,11 @@ export default function AdminDashboard() {
     router.push('/admin');
   };
 
-  const updateReportStatus = async (reportId: string, newStatus: string) => {
-    const token = localStorage.getItem('admin_token');
-    if (!token) {
-      console.error('No admin token found in localStorage');
-      localStorage.removeItem('admin_token');
-      router.push('/admin');
-      return;
-    }
 
-    // Decode token to check if it's valid format
-    try {
-      const decodedToken = atob(token); // Use atob for decoding
-      const [adminId, timestamp] = decodedToken.split(':');
-      
-      if (!adminId || !timestamp) {
-        console.error('Invalid token format');
-        localStorage.removeItem('admin_token');
-        router.push('/admin');
-        return;
-      }
-      
-      const tokenTime = parseInt(timestamp);
-      const currentTime = Date.now();
-      const maxAge = 8 * 60 * 60 * 1000; // 8 hours in milliseconds
-      
-      if (isNaN(tokenTime)) {
-        console.error('Invalid timestamp in token');
-        localStorage.removeItem('admin_token');
-        router.push('/admin');
-        return;
-      }
-      
-      if (currentTime - tokenTime > maxAge) {
-        console.error('Token has expired');
-        localStorage.removeItem('admin_token');
-        router.push('/admin');
-        return;
-      }
-    } catch (decodeError) {
-      console.error('Token decode error:', decodeError);
-      localStorage.removeItem('admin_token');
-      router.push('/admin');
-      return;
-    }
-
-    setIsUpdatingStatus(true);
-    try {
-      const response = await fetch('/api/admin/update-laporan-status', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ reportId, newStatus })
-      });
-
-      if (response.ok) {
-        // Update the status in the local state
-        setLaporanData(prevData => 
-          prevData.map(report => 
-            report.id === reportId ? { ...report, status: newStatus } : report
-          )
-        );
-        alert('Status laporan berhasil diperbarui!');
-      } else {
-        const errorData = await response.json();
-        let errorMessage = errorData.error || 'Unknown error';
-        if (errorMessage.includes('Unauthorized') || response.status === 401) {
-          // Token might be expired, redirect to login
-          localStorage.removeItem('admin_token');
-          router.push('/admin');
-          return;
-        }
-        alert(`Gagal memperbarui status: ${errorMessage}`);
-      }
-    } catch (error) {
-      console.error('Error updating report status:', error);
-      alert('Terjadi kesalahan saat memperbarui status laporan.');
-    } finally {
-      setIsUpdatingStatus(false);
-    }
-  };
 
   const filteredLaporan = laporanData.filter(item =>
     (item.subjek?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.kategori?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.status?.toLowerCase().includes(searchTerm.toLowerCase())) &&
-    (statusFilter === 'all' || item.status === statusFilter)
+    item.kategori?.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const filteredDeklarasi = deklarasiData.filter(item =>
@@ -291,32 +207,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Status Distribution */}
-        {activeTab === 'laporan' && (
-          <div className="card mb-8">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Distribusi Status Laporan</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-                <p className="text-red-800 font-medium">Baru</p>
-                <p className="text-2xl font-bold text-red-600 mt-1">
-                  {laporanData.filter(item => item.status === 'Baru').length}
-                </p>
-              </div>
-              <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-                <p className="text-yellow-800 font-medium">Diproses</p>
-                <p className="text-2xl font-bold text-yellow-600 mt-1">
-                  {laporanData.filter(item => item.status === 'Diproses').length}
-                </p>
-              </div>
-              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                <p className="text-green-800 font-medium">Selesai</p>
-                <p className="text-2xl font-bold text-green-600 mt-1">
-                  {laporanData.filter(item => item.status === 'Selesai').length}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
+
 
         {/* Tabs */}
         <div className="card">
@@ -354,18 +245,7 @@ export default function AdminDashboard() {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="input-field flex-grow"
             />
-            {activeTab === 'laporan' && (
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="input-field"
-              >
-                <option value="all">Semua Status</option>
-                <option value="Baru">Baru</option>
-                <option value="Diproses">Diproses</option>
-                <option value="Selesai">Selesai</option>
-              </select>
-            )}
+
           </div>
 
           {loading ? (
@@ -388,7 +268,7 @@ export default function AdminDashboard() {
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kategori</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Subjek</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kejadian</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
                         </tr>
                       </thead>
@@ -403,23 +283,7 @@ export default function AdminDashboard() {
                             </td>
                             <td className="px-4 py-3 text-sm text-gray-900">{item.subjek}</td>
                             <td className="px-4 py-3 text-sm text-gray-600">{item.waktuKejadian}</td>
-                            <td className="px-4 py-3 text-sm">
-                              <select
-                                value={item.status}
-                                onChange={(e) => updateReportStatus(item.id, e.target.value)}
-                                disabled={isUpdatingStatus}
-                                className={`px-2 py-1 rounded-full text-xs ${
-                                  item.status === 'Baru' ? 'bg-red-100 text-red-800' :
-                                  item.status === 'Diproses' ? 'bg-yellow-100 text-yellow-800' :
-                                  item.status === 'Selesai' ? 'bg-green-100 text-green-800' :
-                                  'bg-gray-100 text-gray-800'
-                                } ${isUpdatingStatus ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                              >
-                                <option value="Baru">Baru</option>
-                                <option value="Diproses">Diproses</option>
-                                <option value="Selesai">Selesai</option>
-                              </select>
-                            </td>
+
                             <td className="px-4 py-3 text-sm">
                               <button
                                 onClick={() => setSelectedItem(item)}
@@ -524,19 +388,7 @@ export default function AdminDashboard() {
                     <label className="text-sm font-semibold text-gray-700">Isi Laporan</label>
                     <p className="text-gray-900 mt-1 whitespace-pre-wrap">{selectedItem.isiLaporan}</p>
                   </div>
-                  <div>
-                    <label className="text-sm font-semibold text-gray-700">Status</label>
-                    <p className="mt-1">
-                      <span className={`px-3 py-1 rounded-full text-sm ${
-                        selectedItem.status === 'Baru' ? 'bg-red-100 text-red-800' :
-                        selectedItem.status === 'Diproses' ? 'bg-yellow-100 text-yellow-800' :
-                        selectedItem.status === 'Selesai' ? 'bg-green-100 text-green-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {selectedItem.status}
-                      </span>
-                    </p>
-                  </div>
+
                   {selectedItem.linkBukti && (
                     <div>
                       <label className="text-sm font-semibold text-gray-700">Bukti Laporan</label>

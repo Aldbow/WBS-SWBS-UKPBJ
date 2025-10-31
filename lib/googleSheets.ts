@@ -67,7 +67,9 @@ export const getSheetData = async (sheetId: string, range: string) => {
 
 export const updateSheetData = async (sheetId: string, range: string, values: any[][]) => {
   try {
-    console.log(`Updating data in sheet ${sheetId}, range ${range}`);
+    console.log(`UPDATING (not appending) data in sheet ${sheetId}, range ${range}`);
+    console.log(`Values to update:`, values);
+    console.log('Method being called: spreadsheets.values.update');
     const auth = getAuthClient();
     const sheets = google.sheets({ version: 'v4', auth });
 
@@ -80,7 +82,7 @@ export const updateSheetData = async (sheetId: string, range: string, values: an
       },
     });
 
-    console.log('Sheet data updated successfully');
+    console.log('Sheet data updated successfully', response);
     return response.data;
   } catch (error) {
     console.error('Error updating sheet data:', error);

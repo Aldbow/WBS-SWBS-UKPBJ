@@ -43,79 +43,11 @@ function verifyToken(request: NextRequest): boolean {
 }
 
 export async function PUT(request: NextRequest) {
-  try {
-    console.log('Updating laporan status...');
-    
-    // Verify admin token
-    if (!verifyToken(request)) {
-      console.log('Unauthorized access attempt to update laporan status');
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    const { reportId, newStatus } = await request.json();
-
-    if (!reportId || !newStatus) {
-      console.log('Missing required parameters for updating status');
-      return NextResponse.json(
-        { error: 'Report ID and new status are required' },
-        { status: 400 }
-      );
-    }
-
-    console.log(`Updating status for report ${reportId} to ${newStatus}`);
-    
-    const sheetId = process.env.SHEET_ID_LAPORAN;
-    if (!sheetId) {
-      console.error('SHEET_ID_LAPORAN is not configured');
-      return NextResponse.json(
-        { error: 'Server configuration error: SHEET_ID_LAPORAN is not set' },
-        { status: 500 }
-      );
-    }
-    
-    // Get all data to find the row with the report ID
-    const rows = await getSheetData(sheetId, 'SWBS-Laporan-Pelanggaran!A:H');
-    
-    let targetRowIndex = -1;
-    for (let i = 0; i < rows.length; i++) {
-      if (rows[i][0] === reportId) { // Assuming ID is in column A (index 0)
-        targetRowIndex = i;
-        break;
-      }
-    }
-    
-    if (targetRowIndex === -1) {
-      console.log(`Report with ID ${reportId} not found in Google Sheets`);
-      return NextResponse.json(
-        { error: 'Report not found' },
-        { status: 404 }
-      );
-    }
-    
-    // Update the status in column H (index 7)
-    const updatedRow = [...rows[targetRowIndex]];
-    updatedRow[7] = newStatus; // Status is in column H
-    
-    // Update the specific row in the Google Sheet
-    const updateRange = `SWBS-Laporan-Pelanggaran!A${targetRowIndex + 2}:H${targetRowIndex + 2}`; // +2 because we start from row 2 (row 1 has headers)
-    await updateSheetData(sheetId, updateRange, [updatedRow]);
-    
-    console.log(`Successfully updated status for report ${reportId} to ${newStatus}`);
-
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Status updated successfully',
-      data: { reportId, newStatus }
-    });
-
-  } catch (error) {
-    console.error('Error updating report status:', error);
-    return NextResponse.json(
-      { error: 'Failed to update report status' },
-      { status: 500 }
-    );
-  }
+  // Functionality removed as status column has been removed from the spreadsheet
+  return NextResponse.json(
+    { 
+      error: 'Fungsi update status telah dihapus karena kolom status telah dihapus dari spreadsheet.' 
+    },
+    { status: 404 } // Not Found
+  );
 }
