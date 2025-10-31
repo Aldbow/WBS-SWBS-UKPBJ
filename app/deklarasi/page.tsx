@@ -33,10 +33,20 @@ export default function DeklarasiPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (!agreed) {
       alert('Anda harus menyetujui pernyataan terlebih dahulu.');
       return;
     }
+    
+    // Validation for "lainnyaLainnya" when "lainnya" is "ya"
+    if (formData.lainnya === 'ya' && !formData.lainnyaLainnya.trim()) {
+      alert('Mohon isi keterangan untuk "Lainnya (Sebutkan)" jika Anda memilih "Ya" pada opsi tersebut.');
+      return;
+    }
+    
+
+    
     setLoading(true);
 
     try {
@@ -435,9 +445,55 @@ export default function DeklarasiPage() {
                               </label>
                             </td>
                           </tr>
+                          {/* Row 6 */}
+                          <tr>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">5</td>
+                            <td className="px-6 py-4 text-sm text-gray-900">Lainnya (Sebutkan)</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
+                              <label className="inline-flex items-center">
+                                <input
+                                  type="radio"
+                                  name="lainnya"
+                                  value="ya"
+                                  checked={formData.lainnya === 'ya'}
+                                  onChange={() => setFormData({ ...formData, lainnya: 'ya' })}
+                                  className="form-radio h-4 w-4 text-primary-600"
+                                />
+                              </label>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
+                              <label className="inline-flex items-center">
+                                <input
+                                  type="radio"
+                                  name="lainnya"
+                                  value="tidak"
+                                  checked={formData.lainnya === 'tidak'}
+                                  onChange={() => setFormData({ ...formData, lainnya: 'tidak' })}
+                                  className="form-radio h-4 w-4 text-primary-600"
+                                />
+                              </label>
+                            </td>
+                          </tr>
                         </tbody>
                       </table>
                     </div>
+                    
+                    {/* Input field for "Lainnya (Sebutkan)" when "Ya" is selected */}
+                    {formData.lainnya === 'ya' && (
+                      <div className="mt-4">
+                        <label className="form-label">
+                          Sebutkan <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="Jelaskan situasi lain yang berpotensi menimbulkan benturan kepentingan"
+                          value={formData.lainnyaLainnya}
+                          onChange={(e) => setFormData({ ...formData, lainnyaLainnya: e.target.value })}
+                          className="input-field"
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
 
