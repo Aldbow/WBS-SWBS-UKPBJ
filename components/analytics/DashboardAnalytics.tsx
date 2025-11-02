@@ -17,22 +17,8 @@ const DashboardAnalytics = ({ laporanData, deklarasiData }: AnalyticsData) => {
     return acc;
   }, {} as Record<string, number>);
 
-  const laporanByStatus = laporanData.reduce((acc, item) => {
-    const status = item.status || 'Baru';
-    acc[status] = (acc[status] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-
-  const laporanByPriority = laporanData.reduce((acc, item) => {
-    const priority = item.priority || 'Normal';
-    acc[priority] = (acc[priority] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-
   // Convert to chart-ready format
   const categoryData = Object.entries(laporanByCategory).map(([name, value]) => ({ name, value }));
-  const statusData = Object.entries(laporanByStatus).map(([name, value]) => ({ name, value }));
-  const priorityData = Object.entries(laporanByPriority).map(([name, value]) => ({ name, value }));
 
   // Calculate time to resolution (simplified)
   const today = new Date();
@@ -96,40 +82,6 @@ const DashboardAnalytics = ({ laporanData, deklarasiData }: AnalyticsData) => {
               </Pie>
               <Tooltip />
             </PieChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* Status Distribution */}
-      <div className="card p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Distribusi Status Laporan</h3>
-        <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={statusData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="value" fill="#8884d8" name="Jumlah" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* Priority Distribution */}
-      <div className="card p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Distribusi Prioritas Laporan</h3>
-        <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={priorityData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="value" fill="#00C49F" name="Jumlah" />
-            </BarChart>
           </ResponsiveContainer>
         </div>
       </div>

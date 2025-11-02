@@ -13,8 +13,6 @@ interface LaporanData {
   waktuKejadian: string;
   isiLaporan: string;
   linkBukti: string;
-  status: string;
-  priority: string;
 }
 
 interface DeklarasiData {
@@ -28,8 +26,6 @@ interface DeklarasiData {
   pihakTerkait: string;
   bentukHubungan: string;
   uraianDetail: string;
-  status: string;
-  priority: string;
 }
 
 export default function AdminDashboard() {
@@ -162,85 +158,14 @@ export default function AdminDashboard() {
 
   const filteredLaporan = laporanData.filter(item =>
     (item.subjek?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.kategori?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.status?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.priority?.toLowerCase().includes(searchTerm.toLowerCase()))
+    item.kategori?.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const filteredDeklarasi = deklarasiData.filter(item =>
     item.namaLengkap?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.namaKegiatan?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.status?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.priority?.toLowerCase().includes(searchTerm.toLowerCase())
+    item.namaKegiatan?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const updateField = async (id: string, field: string, newValue: string, sheetType: 'laporan' | 'deklarasi') => {
-    try {
-      const token = localStorage.getItem('admin_token');
-      const updateData: any = { id, sheetType };
-      
-      if (field === 'status') {
-        updateData.newStatus = newValue;
-      } else if (field === 'priority') {
-        updateData.newPriority = newValue;
-      }
-
-      const response = await fetch('/api/admin/update-status', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(updateData),
-      });
-
-      if (response.ok) {
-        // Refresh the data from Google Spreadsheet
-        await fetchData();
-      } else {
-        const error = await response.json();
-        console.error('Error updating field:', error);
-        alert(`Gagal memperbarui ${field}: ` + error.error);
-      }
-    } catch (error) {
-      console.error('Error updating field:', error);
-      alert('Terjadi kesalahan saat memperbarui data');
-    }
-  };
-
-  const deleteItem = async (id: string, sheetType: 'laporan' | 'deklarasi') => {
-    const itemType = sheetType === 'laporan' ? 'laporan' : 'deklarasi';
-    
-    if (!confirm(`Apakah Anda yakin ingin menghapus ${itemType} ini? Tindakan ini tidak dapat dibatalkan.`)) {
-      return;
-    }
-
-    try {
-      const token = localStorage.getItem('admin_token');
-      
-      const response = await fetch('/api/admin/delete-item', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ id, sheetType }),
-      });
-
-      if (response.ok) {
-        // Refresh the data from Google Spreadsheet
-        await fetchData();
-        alert(`${itemType.charAt(0).toUpperCase() + itemType.slice(1)} berhasil dihapus`);
-      } else {
-        const error = await response.json();
-        console.error('Error deleting item:', error);
-        alert(`Gagal menghapus ${itemType}: ` + error.error);
-      }
-    } catch (error) {
-      console.error('Error deleting item:', error);
-      alert('Terjadi kesalahan saat menghapus data');
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -371,8 +296,6 @@ export default function AdminDashboard() {
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kategori</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Subjek</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kejadian</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Prioritas</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
                         </tr>
                       </thead>
@@ -388,54 +311,12 @@ export default function AdminDashboard() {
                             <td className="px-4 py-3 text-sm text-gray-900">{item.subjek}</td>
                             <td className="px-4 py-3 text-sm text-gray-600">{item.waktuKejadian}</td>
                             <td className="px-4 py-3 text-sm">
-                              <select
-                                value={item.status}
-                                onChange={(e) => updateField(item.id, 'status', e.target.value, 'laporan')}
-                                className={`px-2 py-1 rounded text-xs ${
-                                  item.status === 'Baru' ? 'bg-blue-100 text-blue-800' :
-                                  item.status === 'Ditinjau' ? 'bg-yellow-100 text-yellow-800' :
-                                  item.status === 'Selesai' ? 'bg-green-100 text-green-800' : 
-                                  'bg-gray-100 text-gray-800'
-                                }`}
+                              <button
+                                onClick={() => setSelectedItem(item)}
+                                className="text-primary-600 hover:text-primary-800 font-medium"
                               >
-                                <option value="Baru">Baru</option>
-                                <option value="Ditinjau">Ditinjau</option>
-                                <option value="Selesai">Selesai</option>
-                              </select>
-                            </td>
-                            <td className="px-4 py-3 text-sm">
-                              <select
-                                value={item.priority}
-                                onChange={(e) => updateField(item.id, 'priority', e.target.value, 'laporan')}
-                                className={`px-2 py-1 rounded text-xs ${
-                                  item.priority === 'Rendah' ? 'bg-green-100 text-green-800' :
-                                  item.priority === 'Normal' ? 'bg-blue-100 text-blue-800' :
-                                  item.priority === 'Tinggi' ? 'bg-yellow-100 text-yellow-800' :
-                                  item.priority === 'Kritis' ? 'bg-red-100 text-red-800' : 
-                                  'bg-gray-100 text-gray-800'
-                                }`}
-                              >
-                                <option value="Rendah">Rendah</option>
-                                <option value="Normal">Normal</option>
-                                <option value="Tinggi">Tinggi</option>
-                                <option value="Kritis">Kritis</option>
-                              </select>
-                            </td>
-                            <td className="px-4 py-3 text-sm">
-                              <div className="flex gap-2">
-                                <button
-                                  onClick={() => setSelectedItem(item)}
-                                  className="text-primary-600 hover:text-primary-800 font-medium"
-                                >
-                                  Lihat Detail
-                                </button>
-                                <button
-                                  onClick={() => deleteItem(item.id, 'laporan')}
-                                  className="text-red-600 hover:text-red-800 font-medium"
-                                >
-                                  Hapus
-                                </button>
-                              </div>
+                                Lihat Detail
+                              </button>
                             </td>
                           </tr>
                         ))}
@@ -458,8 +339,6 @@ export default function AdminDashboard() {
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">NIP/NIK</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kegiatan</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Prioritas</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
                         </tr>
                       </thead>
@@ -471,54 +350,12 @@ export default function AdminDashboard() {
                             <td className="px-4 py-3 text-sm text-gray-600">{item.nipNik}</td>
                             <td className="px-4 py-3 text-sm text-gray-900">{item.namaKegiatan}</td>
                             <td className="px-4 py-3 text-sm">
-                              <select
-                                value={item.status}
-                                onChange={(e) => updateField(item.id, 'status', e.target.value, 'deklarasi')}
-                                className={`px-2 py-1 rounded text-xs ${
-                                  item.status === 'Baru' ? 'bg-blue-100 text-blue-800' :
-                                  item.status === 'Ditinjau' ? 'bg-yellow-100 text-yellow-800' :
-                                  item.status === 'Selesai' ? 'bg-green-100 text-green-800' : 
-                                  'bg-gray-100 text-gray-800'
-                                }`}
+                              <button
+                                onClick={() => setSelectedItem(item)}
+                                className="text-primary-600 hover:text-primary-800 font-medium"
                               >
-                                <option value="Baru">Baru</option>
-                                <option value="Ditinjau">Ditinjau</option>
-                                <option value="Selesai">Selesai</option>
-                              </select>
-                            </td>
-                            <td className="px-4 py-3 text-sm">
-                              <select
-                                value={item.priority}
-                                onChange={(e) => updateField(item.id, 'priority', e.target.value, 'deklarasi')}
-                                className={`px-2 py-1 rounded text-xs ${
-                                  item.priority === 'Rendah' ? 'bg-green-100 text-green-800' :
-                                  item.priority === 'Normal' ? 'bg-blue-100 text-blue-800' :
-                                  item.priority === 'Tinggi' ? 'bg-yellow-100 text-yellow-800' :
-                                  item.priority === 'Kritis' ? 'bg-red-100 text-red-800' : 
-                                  'bg-gray-100 text-gray-800'
-                                }`}
-                              >
-                                <option value="Rendah">Rendah</option>
-                                <option value="Normal">Normal</option>
-                                <option value="Tinggi">Tinggi</option>
-                                <option value="Kritis">Kritis</option>
-                              </select>
-                            </td>
-                            <td className="px-4 py-3 text-sm">
-                              <div className="flex gap-2">
-                                <button
-                                  onClick={() => setSelectedItem(item)}
-                                  className="text-primary-600 hover:text-primary-800 font-medium"
-                                >
-                                  Lihat Detail
-                                </button>
-                                <button
-                                  onClick={() => deleteItem(item.id, 'deklarasi')}
-                                  className="text-red-600 hover:text-red-800 font-medium"
-                                >
-                                  Hapus
-                                </button>
-                              </div>
+                                Lihat Detail
+                              </button>
                             </td>
                           </tr>
                         ))}
@@ -576,48 +413,6 @@ export default function AdminDashboard() {
                   <div>
                     <label className="text-sm font-semibold text-gray-700">Isi Laporan</label>
                     <p className="text-gray-900 mt-1 whitespace-pre-wrap">{selectedItem.isiLaporan}</p>
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-semibold text-gray-700">Status</label>
-                    <div className="mt-1">
-                      <select
-                        value={selectedItem.status}
-                        onChange={(e) => updateField(selectedItem.id, 'status', e.target.value, 'laporan')}
-                        className={`px-3 py-2 rounded ${
-                          selectedItem.status === 'Baru' ? 'bg-blue-100 text-blue-800' :
-                          selectedItem.status === 'Ditinjau' ? 'bg-yellow-100 text-yellow-800' :
-                          selectedItem.status === 'Selesai' ? 'bg-green-100 text-green-800' : 
-                          'bg-gray-100 text-gray-800'
-                        }`}
-                      >
-                        <option value="Baru">Baru</option>
-                        <option value="Ditinjau">Ditinjau</option>
-                        <option value="Selesai">Selesai</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-semibold text-gray-700">Prioritas</label>
-                    <div className="mt-1">
-                      <select
-                        value={selectedItem.priority}
-                        onChange={(e) => updateField(selectedItem.id, 'priority', e.target.value, 'laporan')}
-                        className={`px-3 py-2 rounded ${
-                          selectedItem.priority === 'Rendah' ? 'bg-green-100 text-green-800' :
-                          selectedItem.priority === 'Normal' ? 'bg-blue-100 text-blue-800' :
-                          selectedItem.priority === 'Tinggi' ? 'bg-yellow-100 text-yellow-800' :
-                          selectedItem.priority === 'Kritis' ? 'bg-red-100 text-red-800' : 
-                          'bg-gray-100 text-gray-800'
-                        }`}
-                      >
-                        <option value="Rendah">Rendah</option>
-                        <option value="Normal">Normal</option>
-                        <option value="Tinggi">Tinggi</option>
-                        <option value="Kritis">Kritis</option>
-                      </select>
-                    </div>
                   </div>
 
                   {selectedItem.linkBukti && (
@@ -703,46 +498,6 @@ export default function AdminDashboard() {
                       <div>
                         <label className="text-sm font-semibold text-gray-700">Waktu Pengiriman</label>
                         <p className="text-gray-900 mt-1">{selectedItem.waktuKirim}</p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-semibold text-gray-700">Status</label>
-                        <div className="mt-1">
-                          <select
-                            value={selectedItem.status}
-                            onChange={(e) => updateField(selectedItem.id, 'status', e.target.value, 'deklarasi')}
-                            className={`px-3 py-2 rounded ${
-                              selectedItem.status === 'Baru' ? 'bg-blue-100 text-blue-800' :
-                              selectedItem.status === 'Ditinjau' ? 'bg-yellow-100 text-yellow-800' :
-                              selectedItem.status === 'Selesai' ? 'bg-green-100 text-green-800' : 
-                              'bg-gray-100 text-gray-800'
-                            }`}
-                          >
-                            <option value="Baru">Baru</option>
-                            <option value="Ditinjau">Ditinjau</option>
-                            <option value="Selesai">Selesai</option>
-                          </select>
-                        </div>
-                      </div>
-                      <div>
-                        <label className="text-sm font-semibold text-gray-700">Prioritas</label>
-                        <div className="mt-1">
-                          <select
-                            value={selectedItem.priority}
-                            onChange={(e) => updateField(selectedItem.id, 'priority', e.target.value, 'deklarasi')}
-                            className={`px-3 py-2 rounded ${
-                              selectedItem.priority === 'Rendah' ? 'bg-green-100 text-green-800' :
-                              selectedItem.priority === 'Normal' ? 'bg-blue-100 text-blue-800' :
-                              selectedItem.priority === 'Tinggi' ? 'bg-yellow-100 text-yellow-800' :
-                              selectedItem.priority === 'Kritis' ? 'bg-red-100 text-red-800' : 
-                              'bg-gray-100 text-gray-800'
-                            }`}
-                          >
-                            <option value="Rendah">Rendah</option>
-                            <option value="Normal">Normal</option>
-                            <option value="Tinggi">Tinggi</option>
-                            <option value="Kritis">Kritis</option>
-                          </select>
-                        </div>
                       </div>
                     </div>
                   </div>

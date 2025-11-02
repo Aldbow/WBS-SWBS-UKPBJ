@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
     }
 
     console.log('Fetching laporan data from Google Sheets...');
-    const rows = await getSheetData(sheetId, 'SWBS-Laporan-Pelanggaran!A2:I'); // Include status and priority columns (H, I)
+    const rows = await getSheetData(sheetId, 'SWBS-Laporan-Pelanggaran!A2:G'); // Columns A-G only
     console.log(`Fetched ${rows.length} rows of laporan data`);
 
     const data = rows.map((row: any[], index: number) => ({
@@ -76,8 +76,6 @@ export async function GET(request: NextRequest) {
       subjek: row[4] || '',
       isiLaporan: row[5] || '',
       linkBukti: row[6] || '',
-      status: row[7] || 'Baru', // Default to 'Baru' if no status is set
-      priority: row[8] || 'Normal', // Default to 'Normal' if no priority is set
     }));
 
     console.log(`Successfully processed ${data.length} laporan records`);
