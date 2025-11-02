@@ -327,7 +327,7 @@ export default function AdminDashboard() {
               className="btn-secondary flex items-center"
             >
               <span>🔄</span>
-              <span className="ml-2">Muat Ulang Data</span>
+              <span className="ml-2">Refresh</span>
             </button>
           </div>
 
