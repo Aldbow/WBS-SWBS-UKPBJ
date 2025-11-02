@@ -143,6 +143,18 @@ const DatePicker: React.FC<DatePickerProps> = ({
   };
 
   const today = new Date();
+  // Calculate today's date at the start of the day for comparison
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  
+  const isFutureDate = (date: Date | null) => {
+    if (!date) return false;
+    // Create a date object for today at the start of the day for comparison
+    const todayCheck = new Date();
+    todayCheck.setHours(0, 0, 0, 0);
+    
+    return date > todayCheck;
+  };
 
   return (
     <div className="relative" ref={datePickerRef}>
@@ -175,9 +187,14 @@ const DatePicker: React.FC<DatePickerProps> = ({
             <span className="font-semibold">
               {monthNames[currentMonth]} {currentYear}
             </span>
+            {/* Disable next month button if it's in the future */}
             <button 
               onClick={goToNextMonth}
-              className="p-1 rounded hover:bg-gray-100"
+              className={`p-1 rounded ${(currentYear > today.getFullYear()) || 
+                    (currentYear === today.getFullYear() && currentMonth >= today.getMonth()) 
+                    ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'}`}
+              disabled={(currentYear > today.getFullYear()) || 
+                    (currentYear === today.getFullYear() && currentMonth >= today.getMonth())}
             >
               &gt;
             </button>
@@ -198,12 +215,14 @@ const DatePicker: React.FC<DatePickerProps> = ({
             {days.map((day, index) => (
               <button
                 key={index}
-                onClick={() => day && handleDateSelect(day)}
-                disabled={!day}
+                onClick={() => day && !isFutureDate(day) && handleDateSelect(day)}
+                disabled={!day || isFutureDate(day)}
                 className={`
                   text-center text-sm p-1 rounded
                   ${!day 
-                    ? 'invisible' 
+                    ? 'invisible'
+                    : isFutureDate(day)
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                     : day.getDate() === today.getDate() && 
                       day.getMonth() === today.getMonth() && 
                       day.getFullYear() === today.getFullYear()
@@ -222,7 +241,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
             ))}
           </div>
 
-          {/* Time Picker */}
+          {/* Time Picker - Limit to current time if selected date is today */}
           <div className="mt-3 pt-3 border-t">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-gray-700">Waktu:</span>
@@ -231,6 +250,12 @@ const DatePicker: React.FC<DatePickerProps> = ({
                 value={time}
                 onChange={(e) => handleTimeChange(e.target.value)}
                 className="p-1 border border-gray-300 rounded text-sm"
+                max={selectedDate && 
+                     selectedDate.getDate() === today.getDate() && 
+                     selectedDate.getMonth() === today.getMonth() && 
+                     selectedDate.getFullYear() === today.getFullYear() 
+                     ? `${String(today.getHours()).padStart(2, '0')}:${String(today.getMinutes()).padStart(2, '0')}`
+                     : undefined}
               />
             </div>
           </div>
