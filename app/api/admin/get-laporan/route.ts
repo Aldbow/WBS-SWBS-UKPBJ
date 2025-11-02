@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
     }
 
     console.log('Fetching laporan data from Google Sheets...');
-    const rows = await getSheetData(sheetId, 'SWBS-Laporan-Pelanggaran!A2:G'); // Removed column H since status column was removed
+    const rows = await getSheetData(sheetId, 'SWBS-Laporan-Pelanggaran!A2:J'); // Include status, priority and assignment columns (H, I, J)
     console.log(`Fetched ${rows.length} rows of laporan data`);
 
     const data = rows.map((row: any[], index: number) => ({
@@ -76,6 +76,9 @@ export async function GET(request: NextRequest) {
       subjek: row[4] || '',
       isiLaporan: row[5] || '',
       linkBukti: row[6] || '',
+      status: row[7] || 'Baru', // Default to 'Baru' if no status is set
+      priority: row[8] || 'Normal', // Default to 'Normal' if no priority is set
+      assignedTo: row[9] || '', // Default to empty if no assignment is set
     }));
 
     console.log(`Successfully processed ${data.length} laporan records`);

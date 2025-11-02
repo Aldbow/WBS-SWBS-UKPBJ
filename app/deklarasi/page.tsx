@@ -100,9 +100,33 @@ export default function DeklarasiPage() {
               Deklarasi Anda telah berhasil dicatat dan dikirimkan. Terima kasih atas 
               transparansi dan komitmen Anda dalam menjaga integritas proses pengadaan.
             </p>
-            <button onClick={() => router.push('/')} className="btn-primary">
-              Kembali ke Beranda
-            </button>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+              <button onClick={() => router.push('/')} className="btn-primary">
+                Kembali ke Beranda
+              </button>
+              <button
+                onClick={() => {
+                  // Prepare the temporary deklarasi data for PDF generation
+                  const tempDeklarasi = {
+                    ...formData,
+                    id: `PENDING-${Date.now()}`, // Use a temporary ID since we don't have the real one yet
+                    waktuKirim: new Date().toLocaleString('id-ID'),
+                    status: 'Baru',
+                    priority: 'Normal',
+                    assignedTo: ''
+                  };
+                  
+                  // Import the PDF generator dynamically to avoid SSR issues
+                  import('@/lib/pdfGenerator').then((module) => {
+                    module.generateDeklarasiPDF(tempDeklarasi);
+                  });
+                }}
+                className="btn-secondary flex items-center justify-center"
+              >
+                <span className="mr-2">📥</span>
+                Unduh PDF Deklarasi
+              </button>
+            </div>
           </div>
         </main>
         <Footer />

@@ -23,6 +23,9 @@ export interface DeklarasiAdditionalFields {
 export interface DeklarasiData extends DeklarasiFormData, DeklarasiAdditionalFields {
   id: string;
   waktuKirim: string;
+  status: string;
+  priority: string;
+  assignedTo: string;
 }
 
 export interface SubmitDeklarasiRequest extends DeklarasiFormData, DeklarasiAdditionalFields {}

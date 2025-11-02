@@ -28,10 +28,12 @@ export async function POST(request: NextRequest) {
       fields.subjek || '',
       fields.isiLaporan || '',
       '', // LinkBukti (empty since file upload is removed)
-      'Baru' // Status
+      'Baru', // Status
+      'Normal', // Priority
+      '' // Assignment (assigned admin)
     ];
 
-    await appendToSheet(sheetId, 'SWBS-Laporan-Pelanggaran!A:H', values);
+    await appendToSheet(sheetId, 'SWBS-Laporan-Pelanggaran!A:J', values);
 
     return NextResponse.json({ 
       success: true,

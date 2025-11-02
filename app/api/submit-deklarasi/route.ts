@@ -39,9 +39,12 @@ export async function POST(request: NextRequest) {
       data.kepentingan || '',
       data.lainnya || '',
       data.lainnyaLainnya || '',
+      'Baru', // Status column
+      'Normal', // Priority
+      '' // Assignment (assigned admin)
     ];
 
-    await appendToSheet(sheetId, 'SWBS-Deklarasi-Benturan-Kepentingan!A:R', values);
+    await appendToSheet(sheetId, 'SWBS-Deklarasi-Benturan-Kepentingan!A:U', values);
 
     return NextResponse.json({ 
       success: true,

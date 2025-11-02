@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import DashboardAnalytics from '@/components/analytics/DashboardAnalytics';
+import { cache } from '@/lib/cache';
+import { generateDeklarasiPDF } from '@/lib/pdfGenerator';
 
 interface LaporanData {
   id: string;
@@ -11,6 +14,9 @@ interface LaporanData {
   waktuKejadian: string;
   isiLaporan: string;
   linkBukti: string;
+  status: string;
+  priority: string;
+  assignedTo: string;
 
 }
 
@@ -97,6 +103,18 @@ export default function AdminDashboard() {
         return;
       }
       
+      // Try to get cached data first
+      const cachedLaporan = cache.get('laporan_data');
+      const cachedDeklarasi = cache.get('deklarasi_data');
+      
+      if (cachedLaporan && cachedDeklarasi) {
+        setLaporanData(cachedLaporan.data || []);
+        setDeklarasiData(cachedDeklarasi.data || []);
+        setLoading(false);
+        return;
+      }
+      
+      // If no cache, fetch from APIs
       const [laporanRes, deklarasiRes] = await Promise.all([
         fetch('/api/admin/get-laporan', { headers: { 'Authorization': `Bearer ${token}` }}),
         fetch('/api/admin/get-deklarasi', { headers: { 'Authorization': `Bearer ${token}` }})
@@ -131,6 +149,10 @@ export default function AdminDashboard() {
 
       setLaporanData(laporanData.data || []);
       setDeklarasiData(deklarasiData.data || []);
+      
+      // Cache the data for 5 minutes (300,000 ms)
+      cache.set('laporan_data', laporanData, 5 * 60 * 1000);
+      cache.set('deklarasi_data', deklarasiData, 5 * 60 * 1000);
     } catch (error: any) {
       console.error('Error fetching data:', error);
       setError(error.message || 'Terjadi kesalahan saat memuat data. Silakan coba lagi nanti.');
@@ -148,13 +170,55 @@ export default function AdminDashboard() {
 
   const filteredLaporan = laporanData.filter(item =>
     (item.subjek?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.kategori?.toLowerCase().includes(searchTerm.toLowerCase()))
+    item.kategori?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.status?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.priority?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.assignedTo?.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const filteredDeklarasi = deklarasiData.filter(item =>
     item.namaLengkap?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.namaKegiatan?.toLowerCase().includes(searchTerm.toLowerCase())
+    item.namaKegiatan?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.status?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.priority?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.assignedTo?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const updateField = async (id: string, field: string, newValue: string, sheetType: 'laporan' | 'deklarasi') => {
+    try {
+      const token = localStorage.getItem('admin_token');
+      const updateData: any = { id, sheetType };
+      
+      if (field === 'status') {
+        updateData.newStatus = newValue;
+      } else if (field === 'priority') {
+        updateData.newPriority = newValue;
+      } else if (field === 'assignedTo') {
+        updateData.newAssignment = newValue;
+      }
+
+      const response = await fetch('/api/admin/update-status', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(updateData),
+      });
+
+      if (response.ok) {
+        // Refresh the data
+        fetchData();
+      } else {
+        const error = await response.json();
+        console.error('Error updating field:', error);
+        alert(`Gagal memperbarui ${field}: ` + error.error);
+      }
+    } catch (error) {
+      console.error('Error updating field:', error);
+      alert('Terjadi kesalahan saat memperbarui data');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -207,6 +271,14 @@ export default function AdminDashboard() {
           </div>
         </div>
 
+        {/* Analytics Section - Only show if there's data */}
+        {laporanData.length > 0 || deklarasiData.length > 0 ? (
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Analisis dan Laporan</h2>
+            <DashboardAnalytics laporanData={laporanData} deklarasiData={deklarasiData} />
+          </div>
+        ) : null}
+
 
 
         {/* Tabs */}
@@ -245,7 +317,18 @@ export default function AdminDashboard() {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="input-field flex-grow"
             />
-
+            
+            <button
+              onClick={() => {
+                cache.delete('laporan_data');
+                cache.delete('deklarasi_data');
+                fetchData();
+              }}
+              className="btn-secondary flex items-center"
+            >
+              <span>🔄</span>
+              <span className="ml-2">Muat Ulang Data</span>
+            </button>
           </div>
 
           {loading ? (
@@ -268,7 +351,9 @@ export default function AdminDashboard() {
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kategori</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Subjek</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kejadian</th>
-
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Prioritas</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ditugaskan Kepada</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
                         </tr>
                       </thead>
@@ -283,7 +368,49 @@ export default function AdminDashboard() {
                             </td>
                             <td className="px-4 py-3 text-sm text-gray-900">{item.subjek}</td>
                             <td className="px-4 py-3 text-sm text-gray-600">{item.waktuKejadian}</td>
-
+                            <td className="px-4 py-3 text-sm">
+                              <select
+                                value={item.status}
+                                onChange={(e) => updateField(item.id, 'status', e.target.value, 'laporan')}
+                                className={`px-2 py-1 rounded text-xs ${
+                                  item.status === 'Baru' ? 'bg-blue-100 text-blue-800' :
+                                  item.status === 'Ditinjau' ? 'bg-yellow-100 text-yellow-800' :
+                                  item.status === 'Selesai' ? 'bg-green-100 text-green-800' : 
+                                  'bg-gray-100 text-gray-800'
+                                }`}
+                              >
+                                <option value="Baru">Baru</option>
+                                <option value="Ditinjau">Ditinjau</option>
+                                <option value="Selesai">Selesai</option>
+                              </select>
+                            </td>
+                            <td className="px-4 py-3 text-sm">
+                              <select
+                                value={item.priority}
+                                onChange={(e) => updateField(item.id, 'priority', e.target.value, 'laporan')}
+                                className={`px-2 py-1 rounded text-xs ${
+                                  item.priority === 'Rendah' ? 'bg-green-100 text-green-800' :
+                                  item.priority === 'Normal' ? 'bg-blue-100 text-blue-800' :
+                                  item.priority === 'Tinggi' ? 'bg-yellow-100 text-yellow-800' :
+                                  item.priority === 'Kritis' ? 'bg-red-100 text-red-800' : 
+                                  'bg-gray-100 text-gray-800'
+                                }`}
+                              >
+                                <option value="Rendah">Rendah</option>
+                                <option value="Normal">Normal</option>
+                                <option value="Tinggi">Tinggi</option>
+                                <option value="Kritis">Kritis</option>
+                              </select>
+                            </td>
+                            <td className="px-4 py-3 text-sm">
+                              <input
+                                type="text"
+                                value={item.assignedTo}
+                                onChange={(e) => updateField(item.id, 'assignedTo', e.target.value, 'laporan')}
+                                placeholder="Nama admin"
+                                className="px-2 py-1 rounded text-xs border border-gray-300 w-full"
+                              />
+                            </td>
                             <td className="px-4 py-3 text-sm">
                               <button
                                 onClick={() => setSelectedItem(item)}
@@ -313,6 +440,9 @@ export default function AdminDashboard() {
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">NIP/NIK</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kegiatan</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Prioritas</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ditugaskan Kepada</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
                         </tr>
                       </thead>
@@ -323,6 +453,49 @@ export default function AdminDashboard() {
                             <td className="px-4 py-3 text-sm text-gray-900">{item.namaLengkap}</td>
                             <td className="px-4 py-3 text-sm text-gray-600">{item.nipNik}</td>
                             <td className="px-4 py-3 text-sm text-gray-900">{item.namaKegiatan}</td>
+                            <td className="px-4 py-3 text-sm">
+                              <select
+                                value={item.status}
+                                onChange={(e) => updateField(item.id, 'status', e.target.value, 'deklarasi')}
+                                className={`px-2 py-1 rounded text-xs ${
+                                  item.status === 'Baru' ? 'bg-blue-100 text-blue-800' :
+                                  item.status === 'Ditinjau' ? 'bg-yellow-100 text-yellow-800' :
+                                  item.status === 'Selesai' ? 'bg-green-100 text-green-800' : 
+                                  'bg-gray-100 text-gray-800'
+                                }`}
+                              >
+                                <option value="Baru">Baru</option>
+                                <option value="Ditinjau">Ditinjau</option>
+                                <option value="Selesai">Selesai</option>
+                              </select>
+                            </td>
+                            <td className="px-4 py-3 text-sm">
+                              <select
+                                value={item.priority}
+                                onChange={(e) => updateField(item.id, 'priority', e.target.value, 'deklarasi')}
+                                className={`px-2 py-1 rounded text-xs ${
+                                  item.priority === 'Rendah' ? 'bg-green-100 text-green-800' :
+                                  item.priority === 'Normal' ? 'bg-blue-100 text-blue-800' :
+                                  item.priority === 'Tinggi' ? 'bg-yellow-100 text-yellow-800' :
+                                  item.priority === 'Kritis' ? 'bg-red-100 text-red-800' : 
+                                  'bg-gray-100 text-gray-800'
+                                }`}
+                              >
+                                <option value="Rendah">Rendah</option>
+                                <option value="Normal">Normal</option>
+                                <option value="Tinggi">Tinggi</option>
+                                <option value="Kritis">Kritis</option>
+                              </select>
+                            </td>
+                            <td className="px-4 py-3 text-sm">
+                              <input
+                                type="text"
+                                value={item.assignedTo}
+                                onChange={(e) => updateField(item.id, 'assignedTo', e.target.value, 'deklarasi')}
+                                placeholder="Nama admin"
+                                className="px-2 py-1 rounded text-xs border border-gray-300 w-full"
+                              />
+                            </td>
                             <td className="px-4 py-3 text-sm">
                               <button
                                 onClick={() => setSelectedItem(item)}
@@ -389,6 +562,61 @@ export default function AdminDashboard() {
                     <p className="text-gray-900 mt-1 whitespace-pre-wrap">{selectedItem.isiLaporan}</p>
                   </div>
 
+                  <div>
+                    <label className="text-sm font-semibold text-gray-700">Status</label>
+                    <div className="mt-1">
+                      <select
+                        value={selectedItem.status}
+                        onChange={(e) => updateField(selectedItem.id, 'status', e.target.value, 'laporan')}
+                        className={`px-3 py-2 rounded ${
+                          selectedItem.status === 'Baru' ? 'bg-blue-100 text-blue-800' :
+                          selectedItem.status === 'Ditinjau' ? 'bg-yellow-100 text-yellow-800' :
+                          selectedItem.status === 'Selesai' ? 'bg-green-100 text-green-800' : 
+                          'bg-gray-100 text-gray-800'
+                        }`}
+                      >
+                        <option value="Baru">Baru</option>
+                        <option value="Ditinjau">Ditinjau</option>
+                        <option value="Selesai">Selesai</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-semibold text-gray-700">Prioritas</label>
+                    <div className="mt-1">
+                      <select
+                        value={selectedItem.priority}
+                        onChange={(e) => updateField(selectedItem.id, 'priority', e.target.value, 'laporan')}
+                        className={`px-3 py-2 rounded ${
+                          selectedItem.priority === 'Rendah' ? 'bg-green-100 text-green-800' :
+                          selectedItem.priority === 'Normal' ? 'bg-blue-100 text-blue-800' :
+                          selectedItem.priority === 'Tinggi' ? 'bg-yellow-100 text-yellow-800' :
+                          selectedItem.priority === 'Kritis' ? 'bg-red-100 text-red-800' : 
+                          'bg-gray-100 text-gray-800'
+                        }`}
+                      >
+                        <option value="Rendah">Rendah</option>
+                        <option value="Normal">Normal</option>
+                        <option value="Tinggi">Tinggi</option>
+                        <option value="Kritis">Kritis</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-semibold text-gray-700">Ditugaskan Kepada</label>
+                    <div className="mt-1">
+                      <input
+                        type="text"
+                        value={selectedItem.assignedTo}
+                        onChange={(e) => updateField(selectedItem.id, 'assignedTo', e.target.value, 'laporan')}
+                        placeholder="Nama admin"
+                        className="px-3 py-2 rounded border border-gray-300 w-full"
+                      />
+                    </div>
+                  </div>
+
                   {selectedItem.linkBukti && (
                     <div>
                       <label className="text-sm font-semibold text-gray-700">Bukti Laporan</label>
@@ -407,6 +635,20 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                   )}
+                  
+                  <div className="flex justify-end pt-4 border-t">
+                    <button
+                      onClick={() => {
+                        import('@/lib/laporanPdfGenerator').then((module) => {
+                          module.generateLaporanPDF(selectedItem as any);
+                        });
+                      }}
+                      className="btn-secondary flex items-center"
+                    >
+                      <span className="mr-2">📥</span>
+                      Unduh PDF
+                    </button>
+                  </div>
                 </div>
               ) : (
                 /* Deklarasi Detail */
@@ -459,7 +701,68 @@ export default function AdminDashboard() {
                         <label className="text-sm font-semibold text-gray-700">Waktu Pengiriman</label>
                         <p className="text-gray-900 mt-1">{selectedItem.waktuKirim}</p>
                       </div>
+                      <div>
+                        <label className="text-sm font-semibold text-gray-700">Status</label>
+                        <div className="mt-1">
+                          <select
+                            value={selectedItem.status}
+                            onChange={(e) => updateField(selectedItem.id, 'status', e.target.value, 'deklarasi')}
+                            className={`px-3 py-2 rounded ${
+                              selectedItem.status === 'Baru' ? 'bg-blue-100 text-blue-800' :
+                              selectedItem.status === 'Ditinjau' ? 'bg-yellow-100 text-yellow-800' :
+                              selectedItem.status === 'Selesai' ? 'bg-green-100 text-green-800' : 
+                              'bg-gray-100 text-gray-800'
+                            }`}
+                          >
+                            <option value="Baru">Baru</option>
+                            <option value="Ditinjau">Ditinjau</option>
+                            <option value="Selesai">Selesai</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-sm font-semibold text-gray-700">Prioritas</label>
+                        <div className="mt-1">
+                          <select
+                            value={selectedItem.priority}
+                            onChange={(e) => updateField(selectedItem.id, 'priority', e.target.value, 'deklarasi')}
+                            className={`px-3 py-2 rounded ${
+                              selectedItem.priority === 'Rendah' ? 'bg-green-100 text-green-800' :
+                              selectedItem.priority === 'Normal' ? 'bg-blue-100 text-blue-800' :
+                              selectedItem.priority === 'Tinggi' ? 'bg-yellow-100 text-yellow-800' :
+                              selectedItem.priority === 'Kritis' ? 'bg-red-100 text-red-800' : 
+                              'bg-gray-100 text-gray-800'
+                            }`}
+                          >
+                            <option value="Rendah">Rendah</option>
+                            <option value="Normal">Normal</option>
+                            <option value="Tinggi">Tinggi</option>
+                            <option value="Kritis">Kritis</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-sm font-semibold text-gray-700">Ditugaskan Kepada</label>
+                        <div className="mt-1">
+                          <input
+                            type="text"
+                            value={selectedItem.assignedTo}
+                            onChange={(e) => updateField(selectedItem.id, 'assignedTo', e.target.value, 'deklarasi')}
+                            placeholder="Nama admin"
+                            className="px-3 py-2 rounded border border-gray-300 w-full"
+                          />
+                        </div>
+                      </div>
                     </div>
+                  </div>
+                  <div className="flex justify-end pt-4 border-t">
+                    <button
+                      onClick={() => generateDeklarasiPDF(selectedItem as any)}
+                      className="btn-secondary flex items-center"
+                    >
+                      <span className="mr-2">📥</span>
+                      Unduh PDF
+                    </button>
                   </div>
                 </div>
               )}
