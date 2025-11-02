@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSheetData, updateSheetData } from '@/lib/googleSheets';
+import { getSheetData, deleteSheetRow } from '@/lib/googleSheets';
 
 function verifyToken(request: NextRequest): boolean {
   try {
@@ -46,14 +46,14 @@ export async function POST(request: NextRequest) {
   try {
     // Verify admin token
     if (!verifyToken(request)) {
-      console.log('Unauthorized access attempt to update status');
+      console.log('Unauthorized access attempt to delete item');
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    const { id, newStatus, newPriority, sheetType } = await request.json();
+    const { id, sheetType } = await request.json();
 
     if (!id || !sheetType) {
       return NextResponse.json(
@@ -62,50 +62,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate status values if provided
-    if (newStatus) {
-      const validStatuses = ['Baru', 'Ditinjau', 'Selesai'];
-      if (!validStatuses.includes(newStatus)) {
-        return NextResponse.json(
-          { error: 'Invalid status value' },
-          { status: 400 }
-        );
-      }
-    }
-
-    // Validate priority values if provided
-    if (newPriority) {
-      const validPriorities = ['Rendah', 'Normal', 'Tinggi', 'Kritis'];
-      if (!validPriorities.includes(newPriority)) {
-        return NextResponse.json(
-          { error: 'Invalid priority value' },
-          { status: 400 }
-        );
-      }
-    }
-
-    // At least one field must be provided for update
-    if (!newStatus && !newPriority) {
-      return NextResponse.json(
-        { error: 'At least one field must be provided: status or priority' },
-        { status: 400 }
-      );
-    }
-
-    let sheetId, sheetName, idColumn, statusColumn, priorityColumn;
+    let sheetId, sheetName;
     
     if (sheetType === 'laporan') {
       sheetId = process.env.SHEET_ID_LAPORAN;
       sheetName = 'SWBS-Laporan-Pelanggaran';
-      idColumn = 'A'; // ID column
-      statusColumn = 'H'; // Status column
-      priorityColumn = 'I'; // Priority column
     } else if (sheetType === 'deklarasi') {
       sheetId = process.env.SHEET_ID_DEKLARASI;
       sheetName = 'SWBS-Deklarasi-Benturan-Kepentingan';
-      idColumn = 'A'; // ID column
-      statusColumn = 'S'; // Status column (after the existing columns)
-      priorityColumn = 'T'; // Priority column
     } else {
       return NextResponse.json(
         { error: 'Invalid sheet type' },
@@ -122,10 +86,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find the row with the given ID
-    const allRows = await getSheetData(sheetId, `${sheetName}!A:A`); // Get all ID values to find the row index
+    // Get all IDs to find the row index
+    const allRows = await getSheetData(sheetId, `${sheetName}!A:A`);
     
-    const rowIndex = allRows.findIndex(row => row[0] === id);
+    const rowIndex = allRows.findIndex((row: string[]) => row[0] === id);
+    
     if (rowIndex === -1) {
       return NextResponse.json(
         { error: 'ID not found' },
@@ -133,33 +98,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Update fields based on what was provided
-    const updates = [];
-    
-    if (newStatus) {
-      const updateRange = `${sheetName}!${statusColumn}${rowIndex + 2}`;
-      await updateSheetData(sheetId, updateRange, [[newStatus]]);
-      updates.push(`Status to ${newStatus}`);
-    }
-    
-    if (newPriority) {
-      const updateRange = `${sheetName}!${priorityColumn}${rowIndex + 2}`;
-      await updateSheetData(sheetId, updateRange, [[newPriority]]);
-      updates.push(`Priority to ${newPriority}`);
-    }
+    // Delete the row (rowIndex + 1 because header is row 0, +1 again for 1-indexed sheets)
+    await deleteSheetRow(sheetId, rowIndex + 1);
 
     return NextResponse.json({ 
       success: true, 
-      message: `Updated: ${updates.join(', ')}`,
-      id,
-      ...(newStatus && { newStatus }),
-      ...(newPriority && { newPriority })
+      message: `Successfully deleted item with ID: ${id}`,
+      id
     });
 
   } catch (error) {
-    console.error('Error updating status:', error);
+    console.error('Error deleting item:', error);
     return NextResponse.json(
-      { error: 'Failed to update status' },
+      { error: 'Failed to delete item' },
       { status: 500 }
     );
   }

@@ -89,3 +89,35 @@ export const updateSheetData = async (sheetId: string, range: string, values: an
     throw error;
   }
 };
+
+export const deleteSheetRow = async (sheetId: string, rowIndex: number) => {
+  try {
+    console.log(`Deleting row ${rowIndex} from sheet ${sheetId}`);
+    const auth = getAuthClient();
+    const sheets = google.sheets({ version: 'v4', auth });
+
+    const response = await sheets.spreadsheets.batchUpdate({
+      spreadsheetId: sheetId,
+      requestBody: {
+        requests: [
+          {
+            deleteDimension: {
+              range: {
+                sheetId: 0, // Assuming the first sheet
+                dimension: 'ROWS',
+                startIndex: rowIndex,
+                endIndex: rowIndex + 1,
+              },
+            },
+          },
+        ],
+      },
+    });
+
+    console.log('Row deleted successfully');
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting row:', error);
+    throw error;
+  }
+};
