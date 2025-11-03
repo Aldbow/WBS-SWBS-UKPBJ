@@ -10,10 +10,11 @@ interface LaporanPDFData {
   waktuKejadian: string;
   subjek: string;
   isiLaporan: string;
-  linkBukti: string;
+  linkBukti: string; // This could be a path to the evidence directory
   status: string;
   priority: string;
   assignedTo: string;
+  evidenceFiles?: string[]; // Optional array of evidence file names
 }
 
 export const generateLaporanPDF = (laporan: LaporanPDFData) => {
@@ -77,6 +78,26 @@ export const generateLaporanPDF = (laporan: LaporanPDFData) => {
   });
   
   yPosition += 6;
+  
+  // Evidence files section
+  if (laporan.evidenceFiles && laporan.evidenceFiles.length > 0) {
+    doc.setFontSize(14);
+    doc.text('BUKTI PELANGGARAN', 20, yPosition);
+    doc.line(20, yPosition + 2, 190, yPosition + 2); // Underline
+    yPosition += 10;
+    
+    doc.setFontSize(12);
+    doc.text('File Bukti:', 20, yPosition);
+    yPosition += 6;
+    
+    // Add file names
+    laporan.evidenceFiles.forEach((fileName, index) => {
+      doc.text(`• ${fileName}`, 25, yPosition);
+      yPosition += 6;
+    });
+    
+    yPosition += 6; // Extra space after evidence files list
+  }
   
   // Status, Priority and Assignment (as a table for better formatting)
   if (laporan.status || laporan.priority || laporan.assignedTo) {

@@ -28,6 +28,75 @@ interface DeklarasiData {
   uraianDetail: string;
 }
 
+interface EvidenceFile {
+  name: string;
+  size?: number;
+  type?: string;
+}
+
+// Evidence Files Section Component
+const EvidenceFilesSection = ({ reportDir }: { reportDir: string }) => {
+  const [files, setFiles] = useState<EvidenceFile[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchEvidenceFiles = async () => {
+      if (!reportDir) {
+        setLoading(false);
+        return;
+      }
+      
+      try {
+        setLoading(true);
+        const token = localStorage.getItem('admin_token');
+        const response = await fetch(`/api/admin/list-evidence?reportDir=${encodeURIComponent(reportDir)}`, {
+          headers: {
+            'Authorization': token ? `Bearer ${token}` : '',
+          },
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to fetch evidence files');
+        }
+
+        const data = await response.json();
+        setFiles(data.files.map((name: string) => ({ name }))); // Add more file info if needed
+      } catch (err: any) {
+        setError(err.message);
+        console.error('Error fetching evidence files:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvidenceFiles();
+  }, [reportDir]);
+
+  if (!reportDir) return <p className="text-gray-500 mt-1">Tidak ada bukti yang diunggah</p>;
+  if (loading) return <p className="text-gray-500 mt-1">Memuat bukti...</p>;
+  if (error) return <p className="text-red-500 mt-1">Error: {error}</p>;
+  if (files.length === 0) return <p className="text-gray-500 mt-1">Tidak ada bukti yang diunggah</p>;
+
+  return (
+    <div className="mt-2 space-y-2">
+      {files.map((file, index) => (
+        <a
+          key={index}
+          href={`/api/admin/view-file?fileName=${encodeURIComponent(file.name)}&reportDir=${encodeURIComponent(reportDir)}&admin=true`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center text-primary-600 hover:underline block"
+        >
+          <span className="mr-2">📎</span>
+          {file.name}
+        </a>
+      ))}
+    </div>
+  );
+};
+
 export default function AdminDashboard() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'laporan' | 'deklarasi'>('laporan');
@@ -418,28 +487,50 @@ export default function AdminDashboard() {
                   {selectedItem.linkBukti && (
                     <div>
                       <label className="text-sm font-semibold text-gray-700">Bukti Laporan</label>
-                      <div className="mt-2 space-y-2">
-                        {selectedItem.linkBukti.split(',').map((link, i) => (
-                          <a
-                            key={i}
-                            href={link.trim()}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="block text-primary-600 hover:underline"
-                          >
-                            📎 File Bukti {i + 1}
-                          </a>
-                        ))}
-                      </div>
+                      <EvidenceFilesSection reportDir={selectedItem.linkBukti} />
                     </div>
                   )}
                   
                   <div className="flex justify-end pt-4 border-t">
                     <button
-                      onClick={() => {
-                        import('@/lib/laporanPdfGenerator').then((module) => {
-                          module.generateLaporanPDF(selectedItem as any);
-                        });
+                      onClick={async () => {
+                        // Fetch evidence files to include in the PDF
+                        if (selectedItem.linkBukti) {
+                          try {
+                            const token = localStorage.getItem('admin_token');
+                            const response = await fetch(`/api/admin/list-evidence?reportDir=${encodeURIComponent(selectedItem.linkBukti)}`, {
+                              headers: {
+                                'Authorization': token ? `Bearer ${token}` : '',
+                              },
+                            });
+
+                            if (response.ok) {
+                              const data = await response.json();
+                              const laporanWithEvidence = {
+                                ...selectedItem,
+                                evidenceFiles: data.files
+                              };
+                              import('@/lib/laporanPdfGenerator').then((module) => {
+                                module.generateLaporanPDF(laporanWithEvidence);
+                              });
+                            } else {
+                              // If there's an error fetching evidence files, still generate the PDF without them
+                              import('@/lib/laporanPdfGenerator').then((module) => {
+                                module.generateLaporanPDF(selectedItem as any);
+                              });
+                            }
+                          } catch (error) {
+                            // If there's an error fetching evidence files, still generate the PDF without them
+                            import('@/lib/laporanPdfGenerator').then((module) => {
+                              module.generateLaporanPDF(selectedItem as any);
+                            });
+                          }
+                        } else {
+                          // No evidence directory, generate PDF without evidence
+                          import('@/lib/laporanPdfGenerator').then((module) => {
+                            module.generateLaporanPDF(selectedItem as any);
+                          });
+                        }
                       }}
                       className="btn-secondary flex items-center"
                     >

@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Create directory for the report
-    const { dirPath } = createReportDirectory(subjek as string);
+    const { dirPath, dirName } = createReportDirectory(subjek as string);
 
     // Process uploaded files if any
     let linkBukti = '';
@@ -100,9 +100,10 @@ export async function POST(request: NextRequest) {
         savedFiles.push(savedFile.uniqueFileName);
       }
 
-      // For now, just set a placeholder since we're storing files locally
-      // In a real system, you might create a secure endpoint to access these files
-      linkBukti = `files://${dirPath}`; // This is just a reference to the local directory
+      // Store the directory name to be used later for accessing files
+      // Format: dirName|file1, file2, etc. - but just store the dirName for now
+      // The actual files are stored in the directory and can be retrieved by dirName
+      linkBukti = dirName;
     }
 
     // Append to Google Sheets
@@ -114,7 +115,7 @@ export async function POST(request: NextRequest) {
       waktuKejadian,
       subjek,
       isiLaporan,
-      linkBukti, // Now we have file references
+      linkBukti, // Now we have the directory name where files are stored
       'Baru', // Status
       'Normal', // Priority
       '' // Assignment (assigned admin)
