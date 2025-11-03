@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import DatePicker from '@/components/DatePicker';
+import FileUpload from '@/components/FileUpload';
 
 export default function LaporanPage() {
   const router = useRouter();
@@ -16,26 +17,40 @@ export default function LaporanPage() {
     subjek: '',
     isiLaporan: '',
   });
-  // const [files, setFiles] = useState<FileList | null>(null); // Disabled for non-Google Workspace setup
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      // Create a FormData object to send both form data and files
+      const formDataToSend = new FormData();
+      
+      // Add form fields to FormData
+      formDataToSend.append('kategori', formData.kategori);
+      formDataToSend.append('waktuKejadian', formData.waktuKejadian);
+      formDataToSend.append('subjek', formData.subjek);
+      formDataToSend.append('isiLaporan', formData.isiLaporan);
+      
+      // Add files to FormData
+      selectedFiles.forEach((file, index) => {
+        formDataToSend.append(`files`, file);
+      });
+
+      // Submit the report form with files
       const response = await fetch('/api/submit-laporan', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+        body: formDataToSend,
       });
 
       if (response.ok) {
         setSuccess(true);
         setFormData({ kategori: '', waktuKejadian: '', subjek: '', isiLaporan: '' });
+        setSelectedFiles([]); // Clear selected files after successful submission
       } else {
-        alert('Terjadi kesalahan. Silakan coba lagi.');
+        const errorData = await response.json();
+        alert(`Terjadi kesalahan: ${errorData.error || 'Silakan coba lagi.'}`);
       }
     } catch (error) {
       console.error('Error:', error);
@@ -181,6 +196,24 @@ export default function LaporanPage() {
                     className="input-field"
                   />
                   <p className="text-sm text-gray-500 mt-1">{formData.isiLaporan.length}/5000 karakter</p>
+                </div>
+
+                {/* File Upload */}
+                <div>
+                  <label className="form-label">Lampiran Bukti</label>
+                  <FileUpload
+                    onFilesSelected={setSelectedFiles}
+                    maxFileSize={10}
+                    maxFiles={5}
+                    allowedTypes={[
+                      'image/jpeg',
+                      'image/jpg', 
+                      'image/png',
+                      'application/pdf',
+                      'application/msword',
+                      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                    ]}
+                  />
                 </div>
 
                 {/* Submit Button */}
