@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState } from 'react';
 
 export default function Header() {
@@ -10,12 +11,29 @@ export default function Header() {
     <header className="bg-white shadow-md sticky top-0 z-50">
       <nav className="container mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
-          {/* Logo */}
-          <Link href="/" className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-primary-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">WBS</span>
+          {/* Logos */}
+          <Link href="/" className="flex items-center space-x-4">
+            {/* Kementerian Ketenagakerjaan Logo */}
+            <div className="flex items-center space-x-3">
+              <Image 
+                src="/img/Logo_Kementerian_Ketenagakerjaan_(2016).png" 
+                alt="Logo Kementerian Ketenagakerjaan" 
+                width={60}
+                height={60}
+                className="h-14 w-auto object-contain"
+              />
+              {/* Vertical divider */}
+              <div className="hidden md:block w-px h-10 bg-gray-300"></div>
+              {/* UKPBJ Logo */}
+              <Image 
+                src="/img/UKPBJ_logo.png" 
+                alt="Logo UKPBJ" 
+                width={60}
+                height={60}
+                className="h-14 w-auto object-contain"
+              />
             </div>
-            <div className="hidden md:block">
+            <div className="hidden md:block ml-2">
               <h1 className="text-lg font-bold text-gray-800">WBS UKPBJ</h1>
               <p className="text-xs text-gray-600">Kementerian Ketenagakerjaan</p>
             </div>
