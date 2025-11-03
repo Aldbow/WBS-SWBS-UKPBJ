@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { useState } from 'react';
 
 export default function Header() {
@@ -15,21 +14,17 @@ export default function Header() {
           <Link href="/" className="flex items-center space-x-4">
             {/* Kementerian Ketenagakerjaan Logo */}
             <div className="flex items-center space-x-3">
-              <Image 
+              <img 
                 src="/img/Logo_Kementerian_Ketenagakerjaan_(2016).png" 
                 alt="Logo Kementerian Ketenagakerjaan" 
-                width={60}
-                height={60}
                 className="h-14 w-auto object-contain"
               />
               {/* Vertical divider */}
               <div className="hidden md:block w-px h-10 bg-gray-300"></div>
               {/* UKPBJ Logo */}
-              <Image 
+              <img 
                 src="/img/UKPBJ_logo.png" 
                 alt="Logo UKPBJ" 
-                width={60}
-                height={60}
                 className="h-14 w-auto object-contain"
               />
             </div>
