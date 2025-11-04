@@ -18,7 +18,7 @@ export default function DeklarasiPage() {
     pekerjaan?: string;
     kepentingan?: string;
     lainnya?: string;
-    lainnyaLainnya?: string;
+    lainnyaLainnya: string;
   }>({
     namaLengkap: '',
     nipNik: '',
@@ -29,6 +29,7 @@ export default function DeklarasiPage() {
     pihakTerkait: '',
     bentukHubungan: '',
     uraianDetail: '',
+    lainnyaLainnya: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {

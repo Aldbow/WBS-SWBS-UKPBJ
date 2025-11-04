@@ -491,7 +491,7 @@ export default function AdminDashboard() {
                     </div>
                   )}
                   
-                  <div className="flex justify-end pt-4 border-t">
+                      <div className="flex justify-end pt-4 border-t">
                     <button
                       onClick={async () => {
                         // Fetch evidence files to include in the PDF
@@ -508,27 +508,52 @@ export default function AdminDashboard() {
                               const data = await response.json();
                               const laporanWithEvidence = {
                                 ...selectedItem,
-                                evidenceFiles: data.files
+                                evidenceFiles: data.files,
+                                // add missing PDF fields with sensible defaults
+                                status: (selectedItem as any).status ?? 'Unassigned',
+                                priority: (selectedItem as any).priority ?? 'Normal',
+                                assignedTo: (selectedItem as any).assignedTo ?? ''
                               };
                               import('@/lib/laporanPdfGenerator').then((module) => {
                                 module.generateLaporanPDF(laporanWithEvidence);
                               });
                             } else {
                               // If there's an error fetching evidence files, still generate the PDF without them
+                              const pdfData = {
+                                ...selectedItem,
+                                evidenceFiles: [],
+                                status: (selectedItem as any).status ?? 'Unassigned',
+                                priority: (selectedItem as any).priority ?? 'Normal',
+                                assignedTo: (selectedItem as any).assignedTo ?? ''
+                              };
                               import('@/lib/laporanPdfGenerator').then((module) => {
-                                module.generateLaporanPDF(selectedItem as any);
+                                module.generateLaporanPDF(pdfData as any);
                               });
                             }
                           } catch (error) {
                             // If there's an error fetching evidence files, still generate the PDF without them
+                            const pdfData = {
+                              ...selectedItem,
+                              evidenceFiles: [],
+                              status: (selectedItem as any).status ?? 'Unassigned',
+                              priority: (selectedItem as any).priority ?? 'Normal',
+                              assignedTo: (selectedItem as any).assignedTo ?? ''
+                            };
                             import('@/lib/laporanPdfGenerator').then((module) => {
-                              module.generateLaporanPDF(selectedItem as any);
+                              module.generateLaporanPDF(pdfData as any);
                             });
                           }
                         } else {
                           // No evidence directory, generate PDF without evidence
+                          const pdfData = {
+                            ...selectedItem,
+                            evidenceFiles: [],
+                            status: (selectedItem as any).status ?? 'Unassigned',
+                            priority: (selectedItem as any).priority ?? 'Normal',
+                            assignedTo: (selectedItem as any).assignedTo ?? ''
+                          };
                           import('@/lib/laporanPdfGenerator').then((module) => {
-                            module.generateLaporanPDF(selectedItem as any);
+                            module.generateLaporanPDF(pdfData as any);
                           });
                         }
                       }}
