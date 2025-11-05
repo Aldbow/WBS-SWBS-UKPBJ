@@ -52,4 +52,4 @@ vercel
 
 ## Runtime Configuration
 
-All API routes that require Node.js runtime are properly configured in the `vercel.json` file.
+API routes that require Node.js runtime are properly configured in the `vercel.json` file to run on Node.js 20.x runtime.
