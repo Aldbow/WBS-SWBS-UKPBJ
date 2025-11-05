@@ -1,0 +1,49 @@
+# Dependencies
+node_modules
+
+# Environment variables
+.env.local
+.env
+.env.production
+.env.local.example
+
+# Next.js
+.next
+out
+
+# Git
+.git
+.gitignore
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Coverage
+coverage
+.nyc_output
+
+# IDE
+.vscode
+.idea
+
+# Backup files
+*.swp
+*.bak
+*.tmp
+
+# Sensitive files that should not be in the Docker image
+# unless specifically required at build time
+README.md
+DOCKER-DEPLOYMENT.md
+VERCEL-DEPLOYMENT.md
+ADMIN-SETUP.md
+SETUP-GUIDE.md
+ANIMATIONS.md
+PRD*

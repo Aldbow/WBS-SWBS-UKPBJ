@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: swbs-coi-pbj
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_APP_URL=http://0.0.0.0:3000
+      - HOST=0.0.0.0
+      # Note: Runtime environment variables are loaded when the container starts
+      # Build-time environment variables can be passed during docker build
+    volumes:
+      # Mount volume for file uploads storage
+      - ./storage:/app/storage
+    restart: unless-stopped
+    # If you have a .env file in the same directory, uncomment the following lines:
+    # env_file:
+    #   - .env
+
+  # Optional: Reverse proxy with Nginx for production use
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: nginx
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/nginx.conf
+  #     - ./ssl:/etc/ssl
+  #   depends_on:
+  #     - app
+  #   restart: unless-stopped
