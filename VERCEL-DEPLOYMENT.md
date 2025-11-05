@@ -52,4 +52,4 @@ vercel
 
 ## Runtime Configuration
 
-API routes that require Node.js runtime are properly configured in the `vercel.json` file to run on Node.js 20.x runtime.
+Vercel automatically handles the runtime configuration for Next.js projects. API routes will run with the appropriate Node.js runtime.
