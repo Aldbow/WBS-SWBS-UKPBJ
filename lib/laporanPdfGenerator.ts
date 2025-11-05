@@ -1,19 +1,9 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { LaporanData } from '@/app/admin/dashboard/page'; // Need to import the interface properly
+import { LaporanData } from '@/types/data';
 
 // This is a simplified version for laporan data - we'll define the interface directly here
-interface LaporanPDFData {
-  id: string;
-  waktuPelaporan: string;
-  kategori: string;
-  waktuKejadian: string;
-  subjek: string;
-  isiLaporan: string;
-  linkBukti: string; // This could be a path to the evidence directory
-  status: string;
-  priority: string;
-  assignedTo: string;
+interface LaporanPDFData extends LaporanData {
   evidenceFiles?: string[]; // Optional array of evidence file names
 }
 
@@ -124,7 +114,8 @@ export const generateLaporanPDF = (laporan: LaporanPDFData) => {
   }
   
   // Add a note at the bottom
-  const finalY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 10 : yPosition + 20;
+  // For now, we'll use a simpler approach since lastAutoTable might not be available in all versions
+  const finalY = yPosition + 20; // Use a fixed position after the table
   doc.setFontSize(10);
   doc.text('* Dokumen ini dicetak secara otomatis dari sistem dan sah tanpa tanda tangan.', 20, finalY);
   

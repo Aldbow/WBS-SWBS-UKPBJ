@@ -99,7 +99,8 @@ export const generateDeklarasiPDF = (deklarasi: DeklarasiData) => {
   });
   
   // Add a note at the bottom
-  const finalY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 10 : yPosition + 20;
+  // Using yPosition after the table instead of doc.lastAutoTable for compatibility
+  const finalY = yPosition + 20; // Fixed position after the table
   doc.setFontSize(10);
   doc.text('* Dokumen ini dicetak secara otomatis dari sistem dan sah tanpa tanda tangan.', 20, finalY);
   

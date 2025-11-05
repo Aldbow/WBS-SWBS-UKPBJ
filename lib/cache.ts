@@ -83,10 +83,16 @@ class SimpleCache {
   // Clean expired entries
   clean(): void {
     const now = Date.now();
-    for (const [key, entry] of this.cache.entries()) {
+    const expiredKeys: string[] = [];
+    // Use Array.from to convert the iterator to an array for better compatibility
+    const entries = Array.from(this.cache.entries());
+    for (const [key, entry] of entries) {
       if (now - entry.timestamp > entry.ttl) {
-        this.cache.delete(key);
+        expiredKeys.push(key);
       }
+    }
+    for (const key of expiredKeys) {
+      this.cache.delete(key);
     }
     this.saveToLocalStorage();
   }

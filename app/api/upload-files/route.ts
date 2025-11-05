@@ -10,12 +10,8 @@ import {
   saveFileToDirectory 
 } from '@/lib/fileStorage';
 
-// Disable automatic body parsing for file uploads
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+// Update for Next.js 14 App Router
+export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,8 +20,11 @@ export async function POST(request: NextRequest) {
 
     // Parse the form data
     const formData = await new Promise<{ fields: formidable.Fields; files: formidable.Files }>((resolve, reject) => {
-      const form = new formidable.IncomingForm();
-      form.uploadDir = '/tmp'; // Temporary directory for uploads
+      const form = new formidable.IncomingForm({
+        uploadDir: '/tmp', // Temporary directory for uploads
+        keepExtensions: true,
+        maxFileSize: 10 * 1024 * 1024, // 10MB
+      });
       form.parse(request as any, (err, fields, files) => {
         if (err) {
           reject(err);
@@ -68,10 +67,10 @@ export async function POST(request: NextRequest) {
         const buffer = fs.readFileSync(file.filepath);
         
         // Validate file type by content (magic bytes)
-        validateFileTypeByContent(buffer, file.mimetype);
+        validateFileTypeByContent(buffer, file.mimetype || '');
         
         // Save the file to the report directory
-        const savedFile = saveFileToDirectory(buffer, file.originalFilename, dirPath);
+        const savedFile = saveFileToDirectory(buffer, file.originalFilename || '', dirPath);
         
         // Remove temporary file
         fs.unlinkSync(file.filepath);
@@ -86,11 +85,11 @@ export async function POST(request: NextRequest) {
       // Handle single file
       validateFile(files as any);
       
-      const buffer = fs.readFileSync(files.filepath);
-      validateFileTypeByContent(buffer, files.mimetype);
+      const buffer = fs.readFileSync((files as any).filepath);
+      validateFileTypeByContent(buffer, (files as any).mimetype || '');
       
-      const savedFile = saveFileToDirectory(buffer, files.originalFilename, dirPath);
-      fs.unlinkSync(files.filepath);
+      const savedFile = saveFileToDirectory(buffer, (files as any).originalFilename || '', dirPath);
+      fs.unlinkSync((files as any).filepath);
       
       savedFiles.push({
         originalName: savedFile.originalName,

@@ -4,6 +4,8 @@ import path from 'path';
 import { ensureUploadDirectory } from '@/lib/fileStorage';
 
 // This endpoint allows authorized users to view files securely
+export const runtime = 'nodejs';
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { fileName: string } }

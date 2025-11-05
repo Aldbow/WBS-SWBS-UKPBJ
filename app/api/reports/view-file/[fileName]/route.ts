@@ -3,6 +3,8 @@ import fs from 'fs';
 import path from 'path';
 import { ensureUploadDirectory } from '@/lib/fileStorage';
 
+export const runtime = 'nodejs';
+
 // This endpoint allows authorized users to view files securely
 export async function GET(
   request: NextRequest,

@@ -12,12 +12,8 @@ import {
 } from '@/lib/fileStorage';
 import { NextResponse } from 'next/server';
 
-// Disable automatic body parsing for file uploads
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+// Update for Next.js 14 App Router
+export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
   try {

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+
+export const runtime = 'nodejs';
 import { ensureUploadDirectory } from '@/lib/fileStorage';
 
 // This endpoint allows admin to list evidence files for a specific report
