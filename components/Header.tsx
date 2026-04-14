@@ -14,23 +14,23 @@ export default function Header() {
           <Link href="/" className="flex items-center space-x-4">
             {/* Kementerian Ketenagakerjaan Logo */}
             <div className="flex items-center space-x-3">
-              <img 
-                src="/img/Logo_Kementerian_Ketenagakerjaan_(2016).png" 
-                alt="Logo Kementerian Ketenagakerjaan" 
+              <img
+                src="/img/Logo_Kementerian_Ketenagakerjaan_(2016).png"
+                alt="Logo Kementerian Ketenagakerjaan"
                 className="h-14 w-auto object-contain"
               />
               {/* Vertical divider */}
               <div className="hidden md:block w-px h-10 bg-gray-300"></div>
               {/* UKPBJ Logo */}
-              <img 
-                src="/img/UKPBJ_logo.png" 
-                alt="Logo UKPBJ" 
+              <img
+                src="/img/UKPBJ_logo.png"
+                alt="Logo UKPBJ"
                 className="h-14 w-auto object-contain"
               />
             </div>
             <div className="hidden md:block ml-2">
-              <h1 className="text-lg font-bold text-gray-800">WBS UKPBJ</h1>
-              <p className="text-xs text-gray-600">Kementerian Ketenagakerjaan</p>
+              <h1 className="text-lg font-bold text-gray-800">Sistem Deklarasi COI UKPBJ</h1>
+              <p className="text-xs text-gray-600">Kementerian Ketenagakerjaan Republik Indonesia</p>
             </div>
           </Link>
 
