@@ -22,7 +22,7 @@ export default function Home() {
             </AnimatedText>
             <AnimatedText delay={0.2}>
               <p className="text-lg md:text-xl text-gray-600 mb-10 max-w-3xl mx-auto">
-                Deklarasi Benturan Kepentingan untuk meningkatkan transparansi dan akuntabilitas di lingkungan UKPBJ Kementerian Ketenagakerjaan.
+                Deklarasi Keterpaksaan dan Benturan Kepentingan untuk meningkatkan transparansi dan akuntabilitas di lingkungan UKPBJ Kementerian Ketenagakerjaan.
               </p>
             </AnimatedText>
             <AnimatedSection animation="scaleUp" delay={0.4}>
@@ -31,7 +31,7 @@ export default function Home() {
                   📢 Buat Laporan (Anonim)
                 </Link>
                 <Link href="/deklarasi" className="btn-secondary text-center">
-                  📝 Buat Deklarasi Benturan Kepentingan
+                  📝 Buat Deklarasi Keterpaksaan Benturan Kepentingan
                 </Link>
               </div>
             </AnimatedSection>
@@ -43,15 +43,15 @@ export default function Home() {
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto">
               <AnimatedSection animation="slideUp">
-                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-8 text-center leading-tight">
-                  Sistem Deklarasi COI <br className="hidden md:block" />
+                <h2 className="text-3xl md:text-3xl font-bold text-gray-900 mb-8 text-center leading-tight">
+                  Sistem Deklarasi Keterpaksaan dan Benturan Kepentingan <br className="hidden md:block" />
                   <span className="text-primary-600 block mt-2 text-2xl md:text-3xl font-medium">(Conflict of Interest)</span>
                 </h2>
               </AnimatedSection>
               <div className="space-y-6 text-center md:text-justify max-w-3xl mx-auto">
                 <AnimatedSection animation="fadeIn" delay={0.2}>
                   <p className="text-lg md:text-xl text-gray-700 leading-relaxed">
-                    Untuk mewujudkan lingkungan kerja yang bersih, aplikasi ini didedikasikan untuk mencegah terjadinya benturan kepentingan. Anda dapat mendeklarasikan potensi konflik secara mudah dan akuntabel demi melindungi reputasi serta profesionalisme instansi.
+                    Untuk mewujudkan lingkungan kerja yang bersih, aplikasi ini didedikasikan untuk mencegah terjadinya Keterpaksaan dan benturan kepentingan. Anda dapat mendeklarasikan potensi konflik secara mudah dan akuntabel demi melindungi reputasi serta profesionalisme instansi.
                   </p>
                 </AnimatedSection>
                 <AnimatedSection animation="fadeIn" delay={0.4}>
