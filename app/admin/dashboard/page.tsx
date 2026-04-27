@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardAnalytics from '@/components/analytics/DashboardAnalytics';
-import { generateDeklarasiPDF } from '@/lib/pdfGenerator';
 
 interface LaporanData {
   id: string;
@@ -49,12 +48,7 @@ const EvidenceFilesSection = ({ reportDir }: { reportDir: string }) => {
       
       try {
         setLoading(true);
-        const token = localStorage.getItem('admin_token');
-        const response = await fetch(`/api/admin/list-evidence?reportDir=${encodeURIComponent(reportDir)}`, {
-          headers: {
-            'Authorization': token ? `Bearer ${token}` : '',
-          },
-        });
+        const response = await fetch(`/api/admin/list-evidence?reportDir=${encodeURIComponent(reportDir)}`);
 
         if (!response.ok) {
           const errorData = await response.json();
@@ -84,7 +78,7 @@ const EvidenceFilesSection = ({ reportDir }: { reportDir: string }) => {
       {files.map((file, index) => (
         <a
           key={index}
-          href={`/api/admin/view-file?fileName=${encodeURIComponent(file.name)}&reportDir=${encodeURIComponent(reportDir)}&admin=true`}
+          href={`/api/admin/view-file?fileName=${encodeURIComponent(file.name)}&reportDir=${encodeURIComponent(reportDir)}`}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center text-primary-600 hover:underline block"
@@ -109,11 +103,6 @@ export default function AdminDashboard() {
   const [error, setError] = useState<string | null>(null); // for displaying errors
 
   useEffect(() => {
-    const token = localStorage.getItem('admin_token');
-    if (!token) {
-      router.push('/admin');
-      return;
-    }
     fetchData();
   }, [router]);
 
@@ -121,82 +110,32 @@ export default function AdminDashboard() {
     setLoading(true);
     setError(null); // Reset error state
     try {
-      const token = localStorage.getItem('admin_token');
-      
-      // Verify token before making requests
-      if (!token) {
-        console.error('No admin token found in localStorage');
-        localStorage.removeItem('admin_token');
-        router.push('/admin');
-        return;
-      }
-      
-      // Decode token to check if it's valid format
-      try {
-        const decodedToken = atob(token); // Use atob for decoding
-        const [adminId, timestamp] = decodedToken.split(':');
-        
-        if (!adminId || !timestamp) {
-          console.error('Invalid token format');
-          localStorage.removeItem('admin_token');
-          router.push('/admin');
-          return;
-        }
-        
-        const tokenTime = parseInt(timestamp);
-        const currentTime = Date.now();
-        const maxAge = 8 * 60 * 60 * 1000; // 8 hours in milliseconds
-        
-        if (isNaN(tokenTime)) {
-          console.error('Invalid timestamp in token');
-          localStorage.removeItem('admin_token');
-          router.push('/admin');
-          return;
-        }
-        
-        if (currentTime - tokenTime > maxAge) {
-          console.error('Token has expired');
-          localStorage.removeItem('admin_token');
-          router.push('/admin');
-          return;
-        }
-      } catch (decodeError) {
-        console.error('Token decode error:', decodeError);
-        localStorage.removeItem('admin_token');
-        router.push('/admin');
-        return;
-      }
-      
       // Always fetch fresh data from Google Spreadsheet (no cache)
       console.log('Fetching fresh data from Google Spreadsheet...');
       
       // If no cache, fetch from APIs
       const [laporanRes, deklarasiRes] = await Promise.all([
-        fetch('/api/admin/get-laporan', { headers: { 'Authorization': `Bearer ${token}` }}),
-        fetch('/api/admin/get-deklarasi', { headers: { 'Authorization': `Bearer ${token}` }})
+        fetch('/api/admin/get-laporan'),
+        fetch('/api/admin/get-deklarasi')
       ]);
 
       if (!laporanRes.ok) {
-        const laporanError = await laporanRes.json();
-        console.error('Laporan API error:', laporanError);
         if (laporanRes.status === 401) {
-          // Token might be expired, redirect to login
-          localStorage.removeItem('admin_token');
           router.push('/admin');
           return;
         }
+        const laporanError = await laporanRes.json();
+        console.error('Laporan API error:', laporanError);
         throw new Error(laporanError.error || 'Gagal memuat data laporan');
       }
 
       if (!deklarasiRes.ok) {
-        const deklarasiError = await deklarasiRes.json();
-        console.error('Deklarasi API error:', deklarasiError);
         if (deklarasiRes.status === 401) {
-          // Token might be expired, redirect to login
-          localStorage.removeItem('admin_token');
           router.push('/admin');
           return;
         }
+        const deklarasiError = await deklarasiRes.json();
+        console.error('Deklarasi API error:', deklarasiError);
         throw new Error(deklarasiError.error || 'Gagal memuat data deklarasi');
       }
 
@@ -218,8 +157,12 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('admin_token');
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/admin/logout', { method: 'POST' });
+    } catch (e) {
+      console.error('Logout error:', e);
+    }
     router.push('/admin');
   };
 
@@ -490,79 +433,6 @@ export default function AdminDashboard() {
                       <EvidenceFilesSection reportDir={selectedItem.linkBukti} />
                     </div>
                   )}
-                  
-                      <div className="flex justify-end pt-4 border-t">
-                    <button
-                      onClick={async () => {
-                        // Fetch evidence files to include in the PDF
-                        if (selectedItem.linkBukti) {
-                          try {
-                            const token = localStorage.getItem('admin_token');
-                            const response = await fetch(`/api/admin/list-evidence?reportDir=${encodeURIComponent(selectedItem.linkBukti)}`, {
-                              headers: {
-                                'Authorization': token ? `Bearer ${token}` : '',
-                              },
-                            });
-
-                            if (response.ok) {
-                              const data = await response.json();
-                              const laporanWithEvidence = {
-                                ...selectedItem,
-                                evidenceFiles: data.files,
-                                // add missing PDF fields with sensible defaults
-                                status: (selectedItem as any).status ?? 'Unassigned',
-                                priority: (selectedItem as any).priority ?? 'Normal',
-                                assignedTo: (selectedItem as any).assignedTo ?? ''
-                              };
-                              import('@/lib/laporanPdfGenerator').then((module) => {
-                                module.generateLaporanPDF(laporanWithEvidence);
-                              });
-                            } else {
-                              // If there's an error fetching evidence files, still generate the PDF without them
-                              const pdfData = {
-                                ...selectedItem,
-                                evidenceFiles: [],
-                                status: (selectedItem as any).status ?? 'Unassigned',
-                                priority: (selectedItem as any).priority ?? 'Normal',
-                                assignedTo: (selectedItem as any).assignedTo ?? ''
-                              };
-                              import('@/lib/laporanPdfGenerator').then((module) => {
-                                module.generateLaporanPDF(pdfData as any);
-                              });
-                            }
-                          } catch (error) {
-                            // If there's an error fetching evidence files, still generate the PDF without them
-                            const pdfData = {
-                              ...selectedItem,
-                              evidenceFiles: [],
-                              status: (selectedItem as any).status ?? 'Unassigned',
-                              priority: (selectedItem as any).priority ?? 'Normal',
-                              assignedTo: (selectedItem as any).assignedTo ?? ''
-                            };
-                            import('@/lib/laporanPdfGenerator').then((module) => {
-                              module.generateLaporanPDF(pdfData as any);
-                            });
-                          }
-                        } else {
-                          // No evidence directory, generate PDF without evidence
-                          const pdfData = {
-                            ...selectedItem,
-                            evidenceFiles: [],
-                            status: (selectedItem as any).status ?? 'Unassigned',
-                            priority: (selectedItem as any).priority ?? 'Normal',
-                            assignedTo: (selectedItem as any).assignedTo ?? ''
-                          };
-                          import('@/lib/laporanPdfGenerator').then((module) => {
-                            module.generateLaporanPDF(pdfData as any);
-                          });
-                        }
-                      }}
-                      className="btn-secondary flex items-center"
-                    >
-                      <span className="mr-2">📥</span>
-                      Unduh PDF
-                    </button>
-                  </div>
                 </div>
               ) : (
                 /* Deklarasi Detail */
@@ -616,15 +486,6 @@ export default function AdminDashboard() {
                         <p className="text-gray-900 mt-1">{selectedItem.waktuKirim}</p>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex justify-end pt-4 border-t">
-                    <button
-                      onClick={() => generateDeklarasiPDF(selectedItem as any)}
-                      className="btn-secondary flex items-center"
-                    >
-                      <span className="mr-2">📥</span>
-                      Unduh PDF
-                    </button>
                   </div>
                 </div>
               )}

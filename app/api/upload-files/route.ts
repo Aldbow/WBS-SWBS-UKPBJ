@@ -7,7 +7,7 @@ import {
   validateFileTypeByContent, 
   ensureUploadDirectory,
   createReportDirectory,
-  saveFileToDirectory 
+  saveFileToSupabase 
 } from '@/lib/fileStorage';
 
 // Update for Next.js 14 App Router
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
         validateFileTypeByContent(buffer, file.mimetype || '');
         
         // Save the file to the report directory
-        const savedFile = saveFileToDirectory(buffer, file.originalFilename || '', dirPath);
+        const savedFile = await saveFileToSupabase(buffer, file.originalFilename || '', dirPath, file.mimetype || '');
         
         // Remove temporary file
         fs.unlinkSync(file.filepath);
@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
       const buffer = fs.readFileSync((files as any).filepath);
       validateFileTypeByContent(buffer, (files as any).mimetype || '');
       
-      const savedFile = saveFileToDirectory(buffer, (files as any).originalFilename || '', dirPath);
+      const savedFile = await saveFileToSupabase(buffer, (files as any).originalFilename || '', dirPath, (files as any).mimetype || '');
       fs.unlinkSync((files as any).filepath);
       
       savedFiles.push({

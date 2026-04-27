@@ -7,7 +7,7 @@ import {
   validateFileTypeByContent, 
   ensureUploadDirectory,
   createReportDirectory,
-  saveFileToDirectory,
+  saveFileToSupabase,
   validateReportSubject
 } from '@/lib/fileStorage';
 import { NextResponse } from 'next/server';
@@ -90,8 +90,8 @@ export async function POST(request: NextRequest) {
         // Validate file type by content (magic bytes)
         validateFileTypeByContent(bufferTyped, file.type);
         
-        // Save the file to the report directory
-        const savedFile = saveFileToDirectory(bufferTyped, file.name, dirPath);
+        // Save the file to Supabase
+        const savedFile = await saveFileToSupabase(bufferTyped, file.name, dirPath, file.type);
         
         savedFiles.push(savedFile.uniqueFileName);
       }

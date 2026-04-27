@@ -1,15 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
-import { ensureUploadDirectory } from '@/lib/fileStorage';
+import { verifyToken } from '@/lib/auth';
+import { supabase } from '@/lib/supabase';
 
 // This endpoint allows authorized users to view files securely
 export const runtime = 'nodejs';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { fileName: string } }
-) {
+export async function GET(request: NextRequest) {
   try {
     // Extract the filename from the URL
     const { searchParams } = new URL(request.url);
@@ -23,17 +19,15 @@ export async function GET(
       );
     }
 
-    // Verify the user is authorized (this is a simplified check)
-    // In a real implementation, you would verify admin credentials here
-    const isAdmin = searchParams.get('admin') === 'true'; // Simplified check
-    if (!isAdmin) {
+    // Verify the user is authorized via HttpOnly cookie
+    if (!verifyToken()) {
       return NextResponse.json(
         { error: 'Unauthorized access' },
         { status: 401 }
       );
     }
 
-    // Sanitize inputs to prevent directory traversal
+    // Sanitize inputs
     if (fileName.includes('../') || fileName.includes('..\\') || 
         reportDir.includes('../') || reportDir.includes('..\\')) {
       return NextResponse.json(
@@ -42,43 +36,26 @@ export async function GET(
       );
     }
 
-    // Construct the full file path
-    const uploadDir = path.join(process.cwd(), 'storage', 'report_uploads');
-    const fullPath = path.join(uploadDir, reportDir, fileName);
+    const filePath = `${reportDir}/${fileName}`;
 
-    // Check if the file exists
-    if (!fs.existsSync(fullPath)) {
+    // Generate a signed URL valid for 60 seconds
+    const { data, error } = await supabase.storage
+      .from('evidence-files')
+      .createSignedUrl(filePath, 60, {
+        download: false, // true to force download, false to view in browser
+      });
+
+    if (error || !data?.signedUrl) {
+      console.error('Error generating signed URL:', error);
       return NextResponse.json(
-        { error: 'File not found' },
+        { error: 'File not found or failed to generate secure link' },
         { status: 404 }
       );
     }
 
-    // Read the file
-    const fileBuffer = fs.readFileSync(fullPath);
-    const fileExtension = path.extname(fullPath).toLowerCase();
-    
-    // Set appropriate content type based on file extension
-    let contentType = 'application/octet-stream'; // Default
-    if (fileExtension === '.jpg' || fileExtension === '.jpeg') {
-      contentType = 'image/jpeg';
-    } else if (fileExtension === '.png') {
-      contentType = 'image/png';
-    } else if (fileExtension === '.pdf') {
-      contentType = 'application/pdf';
-    } else if (fileExtension === '.doc') {
-      contentType = 'application/msword';
-    } else if (fileExtension === '.docx') {
-      contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-    }
+    // Redirect the user to the signed URL
+    return NextResponse.redirect(data.signedUrl);
 
-    // Return the file content
-    return new NextResponse(fileBuffer, {
-      headers: {
-        'Content-Type': contentType,
-        'Content-Disposition': `inline; filename="${fileName}"`, // Display inline in browser
-      },
-    });
   } catch (error) {
     console.error('Error accessing file:', error);
     return NextResponse.json(
