@@ -28,7 +28,7 @@ export default function Home() {
             <AnimatedSection animation="scaleUp" delay={0.4}>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href="/laporan" className="btn-primary text-center">
-                  📢 Buat Laporan (Anonim)
+                  📢 Buat Laporan
                 </Link>
                 <Link href="/deklarasi" className="btn-secondary text-center">
                   📝 Buat Deklarasi Keterpaksaan Benturan Kepentingan
