@@ -106,6 +106,7 @@ export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [error, setError] = useState<string | null>(null); // for displaying errors
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const [draftStatus, setDraftStatus] = useState<string>('');
   const [draftPriority, setDraftPriority] = useState<string>('');
@@ -145,7 +146,12 @@ export default function AdminDashboard() {
         body: JSON.stringify({ id, newStatus, newPriority, sheetType }),
       });
       if (response.ok) {
-        await fetchData();
+        // Optimistic UI Update
+        if (sheetType === 'laporan') {
+          setLaporanData(prev => prev.map(item => item.id === id ? { ...item, status: newStatus, priority: newPriority } : item));
+        } else {
+          setDeklarasiData(prev => prev.map(item => item.id === id ? { ...item, status: newStatus, priority: newPriority } : item));
+        }
         setSelectedItem(prev => prev ? { ...prev, status: newStatus, priority: newPriority } : null);
       } else {
         const err = await response.json();
@@ -164,6 +170,7 @@ export default function AdminDashboard() {
       return;
     }
     
+    setDeletingId(id);
     try {
       const response = await fetch('/api/admin/delete-item', {
         method: 'POST',
@@ -171,7 +178,12 @@ export default function AdminDashboard() {
         body: JSON.stringify({ id, sheetType, linkBukti }),
       });
       if (response.ok) {
-        await fetchData();
+        // Optimistic UI Update: Remove from local state
+        if (sheetType === 'laporan') {
+          setLaporanData(prev => prev.filter(item => item.id !== id));
+        } else {
+          setDeklarasiData(prev => prev.filter(item => item.id !== id));
+        }
       } else {
         const err = await response.json();
         alert('Gagal menghapus: ' + err.error);
@@ -179,6 +191,8 @@ export default function AdminDashboard() {
     } catch (e) {
       console.error(e);
       alert('Terjadi kesalahan koneksi saat menghapus data.');
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -363,7 +377,7 @@ export default function AdminDashboard() {
               onClick={() => {
                 fetchData();
               }}
-              className="btn-secondary flex items-center"
+              className="btn-secondary flex items-center active:scale-95 transition-transform duration-150"
             >
               <span>🔄</span>
               <span className="ml-2">Refresh</span>
@@ -420,24 +434,32 @@ export default function AdminDashboard() {
                               <div className="flex space-x-3">
                                 <button
                                   onClick={() => { setIsEditMode(false); setSelectedItem(item); }}
-                                  className="text-blue-600 hover:text-blue-800"
+                                  className="text-blue-600 hover:text-blue-800 active:scale-90 transition-transform duration-150 ease-in-out p-1 hover:bg-blue-50 rounded-full"
                                   title="Lihat Detail"
                                 >
                                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                                 </button>
                                 <button
                                   onClick={() => { setIsEditMode(true); setSelectedItem(item); }}
-                                  className="text-yellow-600 hover:text-yellow-800"
+                                  className="text-yellow-600 hover:text-yellow-800 active:scale-90 transition-transform duration-150 ease-in-out p-1 hover:bg-yellow-50 rounded-full"
                                   title="Edit Status/Prioritas"
                                 >
                                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                                 </button>
                                 <button
                                   onClick={() => handleDelete(item.id, 'laporan', item.linkBukti)}
-                                  className="text-red-600 hover:text-red-800"
+                                  disabled={deletingId === item.id}
+                                  className={`active:scale-90 transition-all duration-150 ease-in-out p-1 rounded-full ${deletingId === item.id ? 'text-gray-400' : 'text-red-600 hover:text-red-800 hover:bg-red-50'}`}
                                   title="Hapus Data"
                                 >
-                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                  {deletingId === item.id ? (
+                                    <svg className="animate-spin w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                  ) : (
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                  )}
                                 </button>
                               </div>
                             </td>
@@ -488,24 +510,32 @@ export default function AdminDashboard() {
                               <div className="flex space-x-3">
                                 <button
                                   onClick={() => { setIsEditMode(false); setSelectedItem(item); }}
-                                  className="text-blue-600 hover:text-blue-800"
+                                  className="text-blue-600 hover:text-blue-800 active:scale-90 transition-transform duration-150 ease-in-out p-1 hover:bg-blue-50 rounded-full"
                                   title="Lihat Detail"
                                 >
                                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                                 </button>
                                 <button
                                   onClick={() => { setIsEditMode(true); setSelectedItem(item); }}
-                                  className="text-yellow-600 hover:text-yellow-800"
+                                  className="text-yellow-600 hover:text-yellow-800 active:scale-90 transition-transform duration-150 ease-in-out p-1 hover:bg-yellow-50 rounded-full"
                                   title="Edit Status/Prioritas"
                                 >
                                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                                 </button>
                                 <button
                                   onClick={() => handleDelete(item.id, 'deklarasi')}
-                                  className="text-red-600 hover:text-red-800"
+                                  disabled={deletingId === item.id}
+                                  className={`active:scale-90 transition-all duration-150 ease-in-out p-1 rounded-full ${deletingId === item.id ? 'text-gray-400' : 'text-red-600 hover:text-red-800 hover:bg-red-50'}`}
                                   title="Hapus Data"
                                 >
-                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                  {deletingId === item.id ? (
+                                    <svg className="animate-spin w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                  ) : (
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                  )}
                                 </button>
                               </div>
                             </td>
@@ -664,17 +694,17 @@ export default function AdminDashboard() {
                     <button 
                       onClick={() => handleUpdateStatus(selectedItem.id, draftStatus, draftPriority, 'kategori' in selectedItem ? 'laporan' : 'deklarasi')}
                       disabled={updatingStatus || (draftStatus === (selectedItem.status || 'Baru') && draftPriority === (selectedItem.priority || 'Normal'))}
-                      className="bg-green-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                      className="bg-green-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-transform duration-150 active:scale-95"
                     >
                       {updatingStatus ? 'Menyimpan...' : 'Simpan'}
                     </button>
                   </div>
-                  <button onClick={() => setSelectedItem(null)} className="btn-primary shrink-0">
+                  <button onClick={() => setSelectedItem(null)} className="btn-primary shrink-0 active:scale-95 transition-transform duration-150">
                     Tutup
                   </button>
                 </div>
               ) : (
-                <button onClick={() => setSelectedItem(null)} className="btn-primary shrink-0">
+                <button onClick={() => setSelectedItem(null)} className="btn-primary shrink-0 active:scale-95 transition-transform duration-150">
                   Tutup
                 </button>
               )}
