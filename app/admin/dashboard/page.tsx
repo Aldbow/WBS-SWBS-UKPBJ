@@ -106,6 +106,16 @@ export default function AdminDashboard() {
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [error, setError] = useState<string | null>(null); // for displaying errors
 
+  const [draftStatus, setDraftStatus] = useState<string>('');
+  const [draftPriority, setDraftPriority] = useState<string>('');
+
+  useEffect(() => {
+    if (selectedItem) {
+      setDraftStatus(selectedItem.status || 'Baru');
+      setDraftPriority(selectedItem.priority || 'Normal');
+    }
+  }, [selectedItem]);
+
   const getStatusBadgeColor = (status?: string) => {
     switch(status?.toLowerCase()) {
       case 'baru': return 'bg-red-100 text-red-800';
@@ -562,12 +572,12 @@ export default function AdminDashboard() {
             </div>
             <div className="border-t p-6 bg-gray-50">
               <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-                <div className="flex space-x-4">
+                <div className="flex space-x-4 items-end">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">Update Status</label>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">Status</label>
                     <select
-                      value={selectedItem.status || 'Baru'}
-                      onChange={(e) => handleUpdateStatus(selectedItem.id, e.target.value, selectedItem.priority || 'Normal', 'kategori' in selectedItem ? 'laporan' : 'deklarasi')}
+                      value={draftStatus}
+                      onChange={(e) => setDraftStatus(e.target.value)}
                       disabled={updatingStatus}
                       className="border rounded p-2 text-sm bg-white min-w-[120px]"
                     >
@@ -577,10 +587,10 @@ export default function AdminDashboard() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">Update Prioritas</label>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">Prioritas</label>
                     <select
-                      value={selectedItem.priority || 'Normal'}
-                      onChange={(e) => handleUpdateStatus(selectedItem.id, selectedItem.status || 'Baru', e.target.value, 'kategori' in selectedItem ? 'laporan' : 'deklarasi')}
+                      value={draftPriority}
+                      onChange={(e) => setDraftPriority(e.target.value)}
                       disabled={updatingStatus}
                       className="border rounded p-2 text-sm bg-white min-w-[120px]"
                     >
@@ -590,6 +600,13 @@ export default function AdminDashboard() {
                       <option value="Kritis">Kritis</option>
                     </select>
                   </div>
+                  <button 
+                    onClick={() => handleUpdateStatus(selectedItem.id, draftStatus, draftPriority, 'kategori' in selectedItem ? 'laporan' : 'deklarasi')}
+                    disabled={updatingStatus || (draftStatus === (selectedItem.status || 'Baru') && draftPriority === (selectedItem.priority || 'Normal'))}
+                    className="bg-green-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {updatingStatus ? 'Menyimpan...' : 'Simpan'}
+                  </button>
                 </div>
                 <button onClick={() => setSelectedItem(null)} className="btn-primary shrink-0">
                   Tutup
