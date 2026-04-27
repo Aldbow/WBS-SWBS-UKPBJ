@@ -59,8 +59,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Delete the row
-    await deleteSheetRow(sheetId, sheetName, rowIndex + 1);
+    // Delete the row (deleteDimension uses 0-based index)
+    await deleteSheetRow(sheetId, sheetName, rowIndex);
 
     // Delete associated files from Supabase Storage if applicable
     if (sheetType === 'laporan' && linkBukti) {
