@@ -49,7 +49,7 @@ const EvidenceFilesSection = ({ reportDir }: { reportDir: string }) => {
         setLoading(false);
         return;
       }
-      
+
       try {
         setLoading(true);
         const response = await fetch(`/api/admin/list-evidence?reportDir=${encodeURIComponent(reportDir)}`);
@@ -119,7 +119,7 @@ export default function AdminDashboard() {
   }, [selectedItem]);
 
   const getStatusBadgeColor = (status?: string) => {
-    switch(status?.toLowerCase()) {
+    switch (status?.toLowerCase()) {
       case 'baru': return 'bg-red-100 text-red-800';
       case 'ditinjau': return 'bg-yellow-100 text-yellow-800';
       case 'selesai': return 'bg-green-100 text-green-800';
@@ -128,7 +128,7 @@ export default function AdminDashboard() {
   };
 
   const getPriorityBadgeColor = (priority?: string) => {
-    switch(priority?.toLowerCase()) {
+    switch (priority?.toLowerCase()) {
       case 'kritis': return 'bg-red-600 text-white';
       case 'tinggi': return 'bg-orange-100 text-orange-800';
       case 'normal': return 'bg-blue-100 text-blue-800';
@@ -169,7 +169,7 @@ export default function AdminDashboard() {
     if (!window.confirm("Apakah Anda yakin ingin menghapus data ini secara permanen? Data dan file lampiran akan dihapus sepenuhnya.")) {
       return;
     }
-    
+
     setDeletingId(id);
     try {
       const response = await fetch('/api/admin/delete-item', {
@@ -208,7 +208,7 @@ export default function AdminDashboard() {
     try {
       // Always fetch fresh data from Google Spreadsheet (no cache)
       console.log('Fetching fresh data from Google Spreadsheet...');
-      
+
       // If no cache, fetch from APIs
       const [laporanRes, deklarasiRes] = await Promise.all([
         fetch('/api/admin/get-laporan'),
@@ -243,7 +243,7 @@ export default function AdminDashboard() {
 
       setLaporanData(laporanData.data || []);
       setDeklarasiData(deklarasiData.data || []);
-      
+
       // No caching - always fetch fresh data from Google Spreadsheet
     } catch (error: any) {
       console.error('Error fetching data:', error);
@@ -265,7 +265,7 @@ export default function AdminDashboard() {
 
 
   const filteredLaporan = laporanData.filter(item =>
-    (item.subjek?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  (item.subjek?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     item.kategori?.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
@@ -281,7 +281,7 @@ export default function AdminDashboard() {
       <header className="bg-white shadow-md">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Dashboard Admin WBS</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Dashboard Admin</h1>
             <p className="text-sm text-gray-600">UKPBJ Kementerian Ketenagakerjaan</p>
           </div>
           <button onClick={handleLogout} className="btn-secondary">
@@ -295,8 +295,8 @@ export default function AdminDashboard() {
         {error && (
           <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded">
             <p>{error}</p>
-            <button 
-              onClick={() => { setError(null); fetchData(); }} 
+            <button
+              onClick={() => { setError(null); fetchData(); }}
               className="mt-2 text-sm bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
             >
               Muat Ulang Data
@@ -342,21 +342,19 @@ export default function AdminDashboard() {
             <div className="flex space-x-8">
               <button
                 onClick={() => setActiveTab('laporan')}
-                className={`pb-4 px-2 font-semibold border-b-2 transition-colors ${
-                  activeTab === 'laporan'
-                    ? 'border-primary-600 text-primary-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
+                className={`pb-4 px-2 font-semibold border-b-2 transition-colors ${activeTab === 'laporan'
+                  ? 'border-primary-600 text-primary-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
               >
                 Laporan Pelanggaran ({laporanData.length})
               </button>
               <button
                 onClick={() => setActiveTab('deklarasi')}
-                className={`pb-4 px-2 font-semibold border-b-2 transition-colors ${
-                  activeTab === 'deklarasi'
-                    ? 'border-primary-600 text-primary-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
+                className={`pb-4 px-2 font-semibold border-b-2 transition-colors ${activeTab === 'deklarasi'
+                  ? 'border-primary-600 text-primary-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
               >
                 Deklarasi Benturan Kepentingan ({deklarasiData.length})
               </button>
@@ -372,7 +370,7 @@ export default function AdminDashboard() {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="input-field flex-grow"
             />
-            
+
             <button
               onClick={() => {
                 fetchData();
@@ -691,7 +689,7 @@ export default function AdminDashboard() {
                         <option value="Kritis">Kritis</option>
                       </select>
                     </div>
-                    <button 
+                    <button
                       onClick={() => handleUpdateStatus(selectedItem.id, draftStatus, draftPriority, 'kategori' in selectedItem ? 'laporan' : 'deklarasi')}
                       disabled={updatingStatus || (draftStatus === (selectedItem.status || 'Baru') && draftPriority === (selectedItem.priority || 'Normal'))}
                       className="bg-green-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-transform duration-150 active:scale-95"
