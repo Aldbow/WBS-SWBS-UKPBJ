@@ -102,6 +102,7 @@ export default function AdminDashboard() {
   const [deklarasiData, setDeklarasiData] = useState<DeklarasiData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState<LaporanData | DeklarasiData | null>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [error, setError] = useState<string | null>(null); // for displaying errors
@@ -157,6 +158,31 @@ export default function AdminDashboard() {
       setUpdatingStatus(false);
     }
   };
+
+  const handleDelete = async (id: string, sheetType: 'laporan' | 'deklarasi', linkBukti?: string) => {
+    if (!window.confirm("Apakah Anda yakin ingin menghapus data ini secara permanen? Data dan file lampiran akan dihapus sepenuhnya.")) {
+      return;
+    }
+    
+    try {
+      const response = await fetch('/api/admin/delete-item', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, sheetType, linkBukti }),
+      });
+      if (response.ok) {
+        await fetchData();
+      } else {
+        const err = await response.json();
+        alert('Gagal menghapus: ' + err.error);
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Terjadi kesalahan koneksi saat menghapus data.');
+    }
+  };
+
+
 
   useEffect(() => {
     fetchData();
@@ -391,12 +417,29 @@ export default function AdminDashboard() {
                               </span>
                             </td>
                             <td className="px-4 py-3 text-sm">
-                              <button
-                                onClick={() => setSelectedItem(item)}
-                                className="text-primary-600 hover:text-primary-800 font-medium"
-                              >
-                                Lihat Detail
-                              </button>
+                              <div className="flex space-x-3">
+                                <button
+                                  onClick={() => { setIsEditMode(false); setSelectedItem(item); }}
+                                  className="text-blue-600 hover:text-blue-800"
+                                  title="Lihat Detail"
+                                >
+                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                </button>
+                                <button
+                                  onClick={() => { setIsEditMode(true); setSelectedItem(item); }}
+                                  className="text-yellow-600 hover:text-yellow-800"
+                                  title="Edit Status/Prioritas"
+                                >
+                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                </button>
+                                <button
+                                  onClick={() => handleDelete(item.id, 'laporan', item.linkBukti)}
+                                  className="text-red-600 hover:text-red-800"
+                                  title="Hapus Data"
+                                >
+                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         ))}
@@ -442,12 +485,29 @@ export default function AdminDashboard() {
                               </span>
                             </td>
                             <td className="px-4 py-3 text-sm">
-                              <button
-                                onClick={() => setSelectedItem(item)}
-                                className="text-primary-600 hover:text-primary-800 font-medium"
-                              >
-                                Lihat Detail
-                              </button>
+                              <div className="flex space-x-3">
+                                <button
+                                  onClick={() => { setIsEditMode(false); setSelectedItem(item); }}
+                                  className="text-blue-600 hover:text-blue-800"
+                                  title="Lihat Detail"
+                                >
+                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                </button>
+                                <button
+                                  onClick={() => { setIsEditMode(true); setSelectedItem(item); }}
+                                  className="text-yellow-600 hover:text-yellow-800"
+                                  title="Edit Status/Prioritas"
+                                >
+                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                </button>
+                                <button
+                                  onClick={() => handleDelete(item.id, 'deklarasi')}
+                                  className="text-red-600 hover:text-red-800"
+                                  title="Hapus Data"
+                                >
+                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         ))}
@@ -570,48 +630,54 @@ export default function AdminDashboard() {
                 </div>
               )}
             </div>
-            <div className="border-t p-6 bg-gray-50">
-              <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-                <div className="flex space-x-4 items-end">
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">Status</label>
-                    <select
-                      value={draftStatus}
-                      onChange={(e) => setDraftStatus(e.target.value)}
-                      disabled={updatingStatus}
-                      className="border rounded p-2 text-sm bg-white min-w-[120px]"
+            <div className="border-t p-6 bg-gray-50 flex justify-end">
+              {isEditMode ? (
+                <div className="flex flex-col md:flex-row justify-between items-center w-full space-y-4 md:space-y-0">
+                  <div className="flex space-x-4 items-end">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">Status</label>
+                      <select
+                        value={draftStatus}
+                        onChange={(e) => setDraftStatus(e.target.value)}
+                        disabled={updatingStatus}
+                        className="border rounded p-2 text-sm bg-white min-w-[120px]"
+                      >
+                        <option value="Baru">Baru</option>
+                        <option value="Ditinjau">Ditinjau</option>
+                        <option value="Selesai">Selesai</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">Prioritas</label>
+                      <select
+                        value={draftPriority}
+                        onChange={(e) => setDraftPriority(e.target.value)}
+                        disabled={updatingStatus}
+                        className="border rounded p-2 text-sm bg-white min-w-[120px]"
+                      >
+                        <option value="Rendah">Rendah</option>
+                        <option value="Normal">Normal</option>
+                        <option value="Tinggi">Tinggi</option>
+                        <option value="Kritis">Kritis</option>
+                      </select>
+                    </div>
+                    <button 
+                      onClick={() => handleUpdateStatus(selectedItem.id, draftStatus, draftPriority, 'kategori' in selectedItem ? 'laporan' : 'deklarasi')}
+                      disabled={updatingStatus || (draftStatus === (selectedItem.status || 'Baru') && draftPriority === (selectedItem.priority || 'Normal'))}
+                      className="bg-green-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
                     >
-                      <option value="Baru">Baru</option>
-                      <option value="Ditinjau">Ditinjau</option>
-                      <option value="Selesai">Selesai</option>
-                    </select>
+                      {updatingStatus ? 'Menyimpan...' : 'Simpan'}
+                    </button>
                   </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">Prioritas</label>
-                    <select
-                      value={draftPriority}
-                      onChange={(e) => setDraftPriority(e.target.value)}
-                      disabled={updatingStatus}
-                      className="border rounded p-2 text-sm bg-white min-w-[120px]"
-                    >
-                      <option value="Rendah">Rendah</option>
-                      <option value="Normal">Normal</option>
-                      <option value="Tinggi">Tinggi</option>
-                      <option value="Kritis">Kritis</option>
-                    </select>
-                  </div>
-                  <button 
-                    onClick={() => handleUpdateStatus(selectedItem.id, draftStatus, draftPriority, 'kategori' in selectedItem ? 'laporan' : 'deklarasi')}
-                    disabled={updatingStatus || (draftStatus === (selectedItem.status || 'Baru') && draftPriority === (selectedItem.priority || 'Normal'))}
-                    className="bg-green-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-                  >
-                    {updatingStatus ? 'Menyimpan...' : 'Simpan'}
+                  <button onClick={() => setSelectedItem(null)} className="btn-primary shrink-0">
+                    Tutup
                   </button>
                 </div>
+              ) : (
                 <button onClick={() => setSelectedItem(null)} className="btn-primary shrink-0">
                   Tutup
                 </button>
-              </div>
+              )}
             </div>
           </div>
         </div>

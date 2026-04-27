@@ -90,11 +90,21 @@ export const updateSheetData = async (sheetId: string, range: string, values: an
   }
 };
 
-export const deleteSheetRow = async (sheetId: string, rowIndex: number) => {
+export const deleteSheetRow = async (sheetId: string, sheetName: string, rowIndex: number) => {
   try {
-    console.log(`Deleting row ${rowIndex} from sheet ${sheetId}`);
+    console.log(`Deleting row ${rowIndex} from sheet ${sheetId}, tab ${sheetName}`);
     const auth = getAuthClient();
     const sheets = google.sheets({ version: 'v4', auth });
+
+    // Find the specific tab's GID (sheetId in Google Sheets API terms)
+    const spreadsheet = await sheets.spreadsheets.get({ spreadsheetId: sheetId });
+    const sheet = spreadsheet.data.sheets?.find(s => s.properties?.title === sheetName);
+    
+    if (!sheet || sheet.properties?.sheetId === undefined) {
+      throw new Error(`Sheet with name "${sheetName}" not found`);
+    }
+    
+    const tabId = sheet.properties.sheetId;
 
     const response = await sheets.spreadsheets.batchUpdate({
       spreadsheetId: sheetId,
@@ -103,7 +113,7 @@ export const deleteSheetRow = async (sheetId: string, rowIndex: number) => {
           {
             deleteDimension: {
               range: {
-                sheetId: 0, // Assuming the first sheet
+                sheetId: tabId, // The specific worksheet GID
                 dimension: 'ROWS',
                 startIndex: rowIndex,
                 endIndex: rowIndex + 1,

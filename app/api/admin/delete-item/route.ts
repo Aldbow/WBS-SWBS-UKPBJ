@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSheetData, deleteSheetRow } from '@/lib/googleSheets';
 import { verifyToken } from '@/lib/auth';
+import { supabase } from '@/lib/supabase';
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,7 +14,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { id, sheetType } = await request.json();
+    const { id, sheetType, linkBukti } = await request.json();
 
     if (!id || !sheetType) {
       return NextResponse.json(
@@ -58,8 +59,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Delete the row (rowIndex + 1 because header is row 0, +1 again for 1-indexed sheets)
-    await deleteSheetRow(sheetId, rowIndex + 1);
+    // Delete the row
+    await deleteSheetRow(sheetId, sheetName, rowIndex + 1);
+
+    // Delete associated files from Supabase Storage if applicable
+    if (sheetType === 'laporan' && linkBukti) {
+      try {
+        const { data: files, error: listError } = await supabase.storage.from('evidence-files').list(linkBukti);
+        if (!listError && files && files.length > 0) {
+          const filesToRemove = files.map(file => `${linkBukti}/${file.name}`);
+          const { error: removeError } = await supabase.storage.from('evidence-files').remove(filesToRemove);
+          if (removeError) {
+            console.error('Failed to remove some files from Supabase:', removeError);
+          } else {
+            console.log(`Successfully removed ${files.length} files from Supabase bucket.`);
+          }
+        }
+      } catch (storageError) {
+        console.error('Error during Supabase file deletion:', storageError);
+      }
+    }
 
     return NextResponse.json({ 
       success: true, 
