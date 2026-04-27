@@ -7,8 +7,8 @@ export default function Footer() {
           <div>
             <h3 className="text-xl font-bold mb-4">Tentang WBS</h3>
             <p className="text-gray-400 text-sm">
-              Sistem Whistleblowing & Deklarasi Benturan Kepentingan untuk 
-              meningkatkan transparansi dan akuntabilitas di lingkungan UKPBJ 
+              Sistem Whistleblowing & Deklarasi Benturan Kepentingan untuk
+              meningkatkan transparansi dan akuntabilitas di lingkungan UKPBJ
               Kementerian Ketenagakerjaan.
             </p>
           </div>
