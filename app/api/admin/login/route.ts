@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { getAdminById } from '@/lib/google-sheets';
 
 export async function POST(request: NextRequest) {
@@ -33,11 +34,19 @@ export async function POST(request: NextRequest) {
     const sessionToken = `${admin.id}:${Date.now()}`;
     const encodedToken = Buffer.from(sessionToken).toString('base64');
 
+    // Set HttpOnly cookie
+    cookies().set('admin_token', encodedToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 8 * 60 * 60, // 8 hours
+      path: '/',
+    });
+
     console.log(`Successful login for admin: ${username}`);
 
     return NextResponse.json({
       success: true,
-      token: encodedToken, // Return simple encoded token instead of JWT
       username: admin.id,
     });
 

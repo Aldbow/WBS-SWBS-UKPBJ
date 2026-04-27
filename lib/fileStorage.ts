@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import { supabase } from './supabase';
 
 // Define allowed file types and maximum size (10MB)
 const ALLOWED_MIME_TYPES = [
@@ -18,12 +19,11 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
 const UPLOAD_BASE_DIR = path.join(process.cwd(), 'storage', 'report_uploads');
 
 /**
- * Creates the base upload directory if it doesn't exist
+ * Stub function to maintain compatibility.
+ * Local upload directory is no longer required with Supabase.
  */
 export const ensureUploadDirectory = () => {
-  if (!fs.existsSync(UPLOAD_BASE_DIR)) {
-    fs.mkdirSync(UPLOAD_BASE_DIR, { recursive: true });
-  }
+  // No-op for Supabase
 };
 
 /**
@@ -61,7 +61,7 @@ export const sanitizeDirectoryName = (subject: string): string => {
 };
 
 /**
- * Creates a unique directory for a report based on the subject
+ * Generates a unique directory name for a report based on the subject
  */
 export const createReportDirectory = (subject: string) => {
   // Generate timestamp
@@ -73,29 +73,34 @@ export const createReportDirectory = (subject: string) => {
   // Create directory name
   const dirName = `${timestamp}_${sanitizedSubject}`;
   
-  // Create the full path
-  const dirPath = path.join(UPLOAD_BASE_DIR, dirName);
-  
-  // Create the directory if it doesn't exist
-  fs.mkdirSync(dirPath, { recursive: true });
-  
   return {
     dirName,
-    dirPath
+    dirPath: dirName // For Supabase, the path is just the folder name prefix
   };
 };
 
 /**
- * Saves a file to the specified directory with a unique name
+ * Saves a file to Supabase Storage with a unique name
  */
-export const saveFileToDirectory = (buffer: Buffer, originalName: string, directory: string) => {
+export const saveFileToSupabase = async (buffer: Buffer, originalName: string, directory: string, mimeType: string) => {
   // Generate a unique filename to prevent conflicts
   const fileExtension = path.extname(originalName);
   const uniqueFileName = `${uuidv4()}${fileExtension}`;
-  const filePath = path.join(directory, uniqueFileName);
   
-  // Write the file
-  fs.writeFileSync(filePath, buffer);
+  // Supabase path: folder/filename.ext
+  const filePath = `${directory}/${uniqueFileName}`;
+  
+  // Upload to Supabase
+  const { error } = await supabase.storage
+    .from('evidence-files')
+    .upload(filePath, buffer, {
+      contentType: mimeType,
+      upsert: false
+    });
+
+  if (error) {
+    throw new Error(`Failed to upload to Supabase: ${error.message}`);
+  }
   
   // Return the path and original name for reference
   return {

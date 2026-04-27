@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
-
-export const runtime = 'nodejs';
-import { ensureUploadDirectory } from '@/lib/fileStorage';
+import { verifyToken } from '@/lib/auth';
+import { supabase } from '@/lib/supabase';
 
 // This endpoint allows admin to list evidence files for a specific report
 export async function GET(request: NextRequest) {
@@ -18,10 +15,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Verify the user is authorized (this is a simplified check)
-    // In a real implementation, you would verify admin credentials here
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    // Verify the user is authorized
+    if (!verifyToken()) {
       return NextResponse.json(
         { error: 'Unauthorized access' },
         { status: 401 }
@@ -36,34 +31,28 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Construct the full directory path
-    const uploadDir = path.join(process.cwd(), 'storage', 'report_uploads');
-    const fullDirPath = path.join(uploadDir, reportDir);
+    // Fetch list of files from Supabase
+    const { data, error } = await supabase.storage.from('evidence-files').list(reportDir);
 
-    // Check if the directory exists
-    if (!fs.existsSync(fullDirPath)) {
-      console.error(`Report directory not found: ${fullDirPath}`);
-      console.log(`Looking for directory: ${fullDirPath}`);
-      console.log(`Upload directory exists: ${fs.existsSync(uploadDir)}`);
-      if (fs.existsSync(uploadDir)) {
-        console.log(`Contents of upload directory:`, fs.readdirSync(uploadDir));
-      }
-      
+    if (error) {
+      console.error('Supabase list error:', error);
       return NextResponse.json(
-        { error: 'Report directory not found' },
+        { error: 'Failed to list evidence files' },
+        { status: 500 }
+      );
+    }
+
+    if (!data || data.length === 0) {
+      return NextResponse.json(
+        { error: 'Report directory not found or empty' },
         { status: 404 }
       );
     }
 
-    // Read the directory contents
-    const files = fs.readdirSync(fullDirPath);
-    
-    // Filter out any non-files if needed and return file names
-    const fileNames = files.filter(file => {
-      const filePath = path.join(fullDirPath, file);
-      const stat = fs.statSync(filePath);
-      return stat.isFile();
-    });
+    // Filter out any non-files if needed (supabase might return empty .emptyFolderPlaceholder)
+    const fileNames = data
+      .filter(file => file.name !== '.emptyFolderPlaceholder')
+      .map(file => file.name);
 
     return NextResponse.json({
       success: true,
