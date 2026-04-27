@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     }
 
     console.log('Fetching laporan data from Google Sheets...');
-    const rows = await getSheetData(sheetId, 'SWBS-Laporan-Pelanggaran!A2:G'); // Columns A-G only
+    const rows = await getSheetData(sheetId, 'SWBS-Laporan-Pelanggaran!A2:I'); // Columns A-I
     console.log(`Fetched ${rows.length} rows of laporan data`);
 
     const data = rows.map((row: any[], index: number) => ({
@@ -36,6 +36,8 @@ export async function GET(request: NextRequest) {
       subjek: row[4] || '',
       isiLaporan: row[5] || '',
       linkBukti: row[6] || '',
+      status: row[7] || 'Baru',
+      priority: row[8] || 'Normal',
     }));
 
     console.log(`Successfully processed ${data.length} laporan records`);

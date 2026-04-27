@@ -12,6 +12,8 @@ interface LaporanData {
   waktuKejadian: string;
   isiLaporan: string;
   linkBukti: string;
+  status?: string;
+  priority?: string;
 }
 
 interface DeklarasiData {
@@ -25,6 +27,8 @@ interface DeklarasiData {
   pihakTerkait: string;
   bentukHubungan: string;
   uraianDetail: string;
+  status?: string;
+  priority?: string;
 }
 
 interface EvidenceFile {
@@ -99,8 +103,50 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState<LaporanData | DeklarasiData | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-
+  const [updatingStatus, setUpdatingStatus] = useState(false);
   const [error, setError] = useState<string | null>(null); // for displaying errors
+
+  const getStatusBadgeColor = (status?: string) => {
+    switch(status?.toLowerCase()) {
+      case 'baru': return 'bg-red-100 text-red-800';
+      case 'ditinjau': return 'bg-yellow-100 text-yellow-800';
+      case 'selesai': return 'bg-green-100 text-green-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getPriorityBadgeColor = (priority?: string) => {
+    switch(priority?.toLowerCase()) {
+      case 'kritis': return 'bg-red-600 text-white';
+      case 'tinggi': return 'bg-orange-100 text-orange-800';
+      case 'normal': return 'bg-blue-100 text-blue-800';
+      case 'rendah': return 'bg-gray-100 text-gray-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const handleUpdateStatus = async (id: string, newStatus: string, newPriority: string, sheetType: 'laporan' | 'deklarasi') => {
+    setUpdatingStatus(true);
+    try {
+      const response = await fetch('/api/admin/update-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, newStatus, newPriority, sheetType }),
+      });
+      if (response.ok) {
+        await fetchData();
+        setSelectedItem(prev => prev ? { ...prev, status: newStatus, priority: newPriority } : null);
+      } else {
+        const err = await response.json();
+        alert('Gagal update: ' + err.error);
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Terjadi kesalahan koneksi saat update status.');
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
 
   useEffect(() => {
     fetchData();
@@ -308,6 +354,8 @@ export default function AdminDashboard() {
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kategori</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Subjek</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kejadian</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Prioritas</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
                         </tr>
                       </thead>
@@ -322,6 +370,16 @@ export default function AdminDashboard() {
                             </td>
                             <td className="px-4 py-3 text-sm text-gray-900">{item.subjek}</td>
                             <td className="px-4 py-3 text-sm text-gray-600">{item.waktuKejadian}</td>
+                            <td className="px-4 py-3 text-sm">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(item.status)}`}>
+                                {item.status || 'Baru'}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-sm">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityBadgeColor(item.priority)}`}>
+                                {item.priority || 'Normal'}
+                              </span>
+                            </td>
                             <td className="px-4 py-3 text-sm">
                               <button
                                 onClick={() => setSelectedItem(item)}
@@ -351,6 +409,8 @@ export default function AdminDashboard() {
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">NIP/NIK</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kegiatan</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Prioritas</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
                         </tr>
                       </thead>
@@ -361,6 +421,16 @@ export default function AdminDashboard() {
                             <td className="px-4 py-3 text-sm text-gray-900">{item.namaLengkap}</td>
                             <td className="px-4 py-3 text-sm text-gray-600">{item.nipNik}</td>
                             <td className="px-4 py-3 text-sm text-gray-900">{item.namaKegiatan}</td>
+                            <td className="px-4 py-3 text-sm">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(item.status)}`}>
+                                {item.status || 'Baru'}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-sm">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityBadgeColor(item.priority)}`}>
+                                {item.priority || 'Normal'}
+                              </span>
+                            </td>
                             <td className="px-4 py-3 text-sm">
                               <button
                                 onClick={() => setSelectedItem(item)}
@@ -490,10 +560,41 @@ export default function AdminDashboard() {
                 </div>
               )}
             </div>
-            <div className="border-t p-6 flex justify-end">
-              <button onClick={() => setSelectedItem(null)} className="btn-primary">
-                Tutup
-              </button>
+            <div className="border-t p-6 bg-gray-50">
+              <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                <div className="flex space-x-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">Update Status</label>
+                    <select
+                      value={selectedItem.status || 'Baru'}
+                      onChange={(e) => handleUpdateStatus(selectedItem.id, e.target.value, selectedItem.priority || 'Normal', 'kategori' in selectedItem ? 'laporan' : 'deklarasi')}
+                      disabled={updatingStatus}
+                      className="border rounded p-2 text-sm bg-white min-w-[120px]"
+                    >
+                      <option value="Baru">Baru</option>
+                      <option value="Ditinjau">Ditinjau</option>
+                      <option value="Selesai">Selesai</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">Update Prioritas</label>
+                    <select
+                      value={selectedItem.priority || 'Normal'}
+                      onChange={(e) => handleUpdateStatus(selectedItem.id, selectedItem.status || 'Baru', e.target.value, 'kategori' in selectedItem ? 'laporan' : 'deklarasi')}
+                      disabled={updatingStatus}
+                      className="border rounded p-2 text-sm bg-white min-w-[120px]"
+                    >
+                      <option value="Rendah">Rendah</option>
+                      <option value="Normal">Normal</option>
+                      <option value="Tinggi">Tinggi</option>
+                      <option value="Kritis">Kritis</option>
+                    </select>
+                  </div>
+                </div>
+                <button onClick={() => setSelectedItem(null)} className="btn-primary shrink-0">
+                  Tutup
+                </button>
+              </div>
             </div>
           </div>
         </div>

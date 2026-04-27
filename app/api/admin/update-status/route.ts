@@ -97,13 +97,13 @@ export async function POST(request: NextRequest) {
     const updates = [];
     
     if (newStatus) {
-      const updateRange = `${sheetName}!${statusColumn}${rowIndex + 2}`;
+      const updateRange = `${sheetName}!${statusColumn}${rowIndex + 1}`;
       await updateSheetData(sheetId, updateRange, [[newStatus]]);
       updates.push(`Status to ${newStatus}`);
     }
     
     if (newPriority) {
-      const updateRange = `${sheetName}!${priorityColumn}${rowIndex + 2}`;
+      const updateRange = `${sheetName}!${priorityColumn}${rowIndex + 1}`;
       await updateSheetData(sheetId, updateRange, [[newPriority]]);
       updates.push(`Priority to ${newPriority}`);
     }

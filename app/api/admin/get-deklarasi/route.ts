@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     }
 
     console.log('Fetching deklarasi data from Google Sheets...');
-    const rows = await getSheetData(sheetId, 'SWBS-Deklarasi-Benturan-Kepentingan!A2:R'); // Columns A-R only
+    const rows = await getSheetData(sheetId, 'SWBS-Deklarasi-Benturan-Kepentingan!A2:T'); // Columns A-T
     console.log(`Fetched ${rows.length} rows of deklarasi data`);
 
     const data = rows.map((row: any[], index: number) => ({
@@ -48,6 +48,8 @@ export async function GET(request: NextRequest) {
       kepentingan: row[15] || '',
       lainnya: row[16] || '',
       lainnyaLainnya: row[17] || '',
+      status: row[18] || 'Baru',
+      priority: row[19] || 'Normal',
     })) as DeklarasiData[];
 
     console.log(`Successfully processed ${data.length} deklarasi records`);
