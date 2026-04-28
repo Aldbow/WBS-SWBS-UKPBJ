@@ -47,11 +47,21 @@ export default function AdminLoginPage() {
     <div className="min-h-screen flex items-center justify-center py-12 px-4">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <div className="mx-auto w-16 h-16 bg-primary-600 rounded-xl flex items-center justify-center mb-4">
-            <span className="text-white font-bold text-2xl">WBS</span>
+          <div className="flex items-center justify-center space-x-4 mb-6">
+            <img
+              src="/img/Logo_Kementerian_Ketenagakerjaan_(2016).png"
+              alt="Logo Kementerian Ketenagakerjaan"
+              className="h-16 w-auto object-contain"
+            />
+            <div className="w-px h-12 bg-gray-300"></div>
+            <img
+              src="/img/UKPBJ_logo.png"
+              alt="Logo UKPBJ"
+              className="h-16 w-auto object-contain"
+            />
           </div>
-          <h2 className="text-3xl font-bold text-gray-900">Login Admin</h2>
-          <p className="mt-2 text-gray-600">Sistem Whistleblowing UKPBJ Kemnaker</p>
+          <h2 className="text-3xl font-bold text-gray-900">Selamat Datang</h2>
+          <p className="mt-2 text-gray-600">Sistem Deklarasi Keterpaksaan Benturan Kepentingan UKPBJ Kemnaker</p>
         </div>
 
         <div className="card">

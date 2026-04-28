@@ -15,22 +15,22 @@ export default function Home() {
         <section className="container mx-auto px-4 py-16 md:py-24">
           <div className="max-w-4xl mx-auto text-center">
             <AnimatedText>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
-                Jaga Integritas Pengadaan:<br />
-                <span className="text-primary-600">Laporkan Pelanggaran</span>
+              <h1 className="text-4xl md:text-5xl lg:text-5xl font-bold text-gray-900 mb-6">
+                Jaga Integritas Pengadaan:
+                <span className="block text-primary-600 mt-3">Deklarasikan Benturan Kepentingan</span>
               </h1>
             </AnimatedText>
             <AnimatedText delay={0.2}>
               <p className="text-lg md:text-xl text-gray-600 mb-10 max-w-3xl mx-auto">
-                Deklarasi Keterpaksaan dan Benturan Kepentingan untuk meningkatkan transparansi dan akuntabilitas di lingkungan UKPBJ Kementerian Ketenagakerjaan.
+                Deklarasi Keterpaksaan Benturan Kepentingan untuk meningkatkan transparansi dan akuntabilitas di lingkungan Kementerian Ketenagakerjaan.
               </p>
             </AnimatedText>
             <AnimatedSection animation="scaleUp" delay={0.4}>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/laporan" className="btn-primary text-center">
+                {/* <Link href="/laporan" className="btn-primary text-center">
                   📢 Buat Laporan
-                </Link>
-                <Link href="/deklarasi" className="btn-secondary text-center">
+                </Link> */}
+                <Link href="/deklarasi" className="btn-primary text-center">
                   📝 Buat Deklarasi Keterpaksaan Benturan Kepentingan
                 </Link>
               </div>

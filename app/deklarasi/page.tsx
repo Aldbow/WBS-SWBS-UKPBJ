@@ -34,20 +34,20 @@ export default function DeklarasiPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!agreed) {
       alert('Anda harus menyetujui pernyataan terlebih dahulu.');
       return;
     }
-    
+
     // Validation for "lainnyaLainnya" when "lainnya" is "ya"
     if (formData.lainnya === 'ya' && !formData.lainnyaLainnya.trim()) {
       alert('Mohon isi keterangan untuk "Lainnya (Sebutkan)" jika Anda memilih "Ya" pada opsi tersebut.');
       return;
     }
-    
 
-    
+
+
     setLoading(true);
 
     try {
@@ -98,7 +98,7 @@ export default function DeklarasiPage() {
             <div className="text-6xl mb-6">✅</div>
             <h1 className="text-3xl font-bold text-gray-900 mb-4">Deklarasi Terkirim</h1>
             <p className="text-lg text-gray-600 mb-8">
-              Deklarasi Anda telah berhasil dicatat dan dikirimkan. Terima kasih atas 
+              Deklarasi Anda telah berhasil dicatat dan dikirimkan. Terima kasih atas
               transparansi dan komitmen Anda dalam menjaga integritas proses pengadaan.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
@@ -128,7 +128,7 @@ export default function DeklarasiPage() {
                     Formulir Deklarasi Formal
                   </h3>
                   <p className="text-yellow-800">
-                    Formulir ini digunakan untuk deklarasi formal. Data diri Anda akan dicatat 
+                    Formulir ini digunakan untuk deklarasi formal. Data diri Anda akan dicatat
                     dan menjadi bagian dari dokumentasi resmi.
                   </p>
                 </div>
@@ -137,15 +137,15 @@ export default function DeklarasiPage() {
 
             {/* Form */}
             <div className="card">
-              <h1 className="text-3xl font-bold text-gray-900 mb-6">
-                Formulir Deklarasi Benturan Kepentingan
+              <h1 className="text-2xl font-bold text-gray-900 mb-6">
+                Formulir Deklarasi Keterpaksaan Benturan Kepentingan
               </h1>
-              
+
               <form onSubmit={handleSubmit} className="space-y-8">
                 {/* Bagian A: Data Diri Pegawai */}
                 <div className="border-l-4 border-primary-500 pl-6">
                   <h2 className="text-xl font-bold text-gray-800 mb-4">Bagian A: Data Diri Pegawai</h2>
-                  
+
                   <div className="space-y-4">
                     {/* Nama Lengkap */}
                     <div>
@@ -200,7 +200,7 @@ export default function DeklarasiPage() {
                       <input
                         type="text"
                         required
-                        placeholder="Contoh: UKPBJ Kementerian Ketenagakerjaan"
+                        placeholder="Contoh: Biro Umum"
                         value={formData.satuanKerja}
                         onChange={(e) => setFormData({ ...formData, satuanKerja: e.target.value })}
                         className="input-field"
@@ -229,7 +229,7 @@ export default function DeklarasiPage() {
                   <h2 className="text-xl font-bold text-gray-800 mb-4">
                     Bagian B: Detail Potensi Benturan Kepentingan
                   </h2>
-                  
+
                   <div className="space-y-4">
                     {/* Nama Kegiatan / Paket Pengadaan */}
                     <div>
@@ -311,7 +311,7 @@ export default function DeklarasiPage() {
                   <h2 className="text-xl font-bold text-gray-800 mb-4">
                     Bagian C: Situasi Potensial Benturan Kepentingan
                   </h2>
-                  
+
                   <div className="space-y-4">
                     <div className="overflow-x-auto">
                       <table className="min-w-full divide-y divide-gray-200">
@@ -480,7 +480,7 @@ export default function DeklarasiPage() {
                         </tbody>
                       </table>
                     </div>
-                    
+
                     {/* Input field for "Lainnya (Sebutkan)" when "Ya" is selected */}
                     {formData.lainnya === 'ya' && (
                       <div className="mt-4">
@@ -503,7 +503,7 @@ export default function DeklarasiPage() {
                 {/* Bagian C: Pernyataan */}
                 <div className="border-l-4 border-red-500 pl-6">
                   <h2 className="text-xl font-bold text-gray-800 mb-4">Bagian D: Pernyataan</h2>
-                  
+
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <label className="flex items-start cursor-pointer">
                       <input
@@ -513,7 +513,7 @@ export default function DeklarasiPage() {
                         className="mt-1 mr-3 w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
                       />
                       <span className="text-sm text-gray-700">
-                        Saya menyatakan bahwa data yang saya isikan adalah <strong>benar</strong> dan 
+                        Saya menyatakan bahwa data yang saya isikan adalah <strong>benar</strong> dan
                         saya bersedia menerima konsekuensi jika data ini tidak benar.
                       </span>
                     </label>

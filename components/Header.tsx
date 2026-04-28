@@ -29,7 +29,7 @@ export default function Header() {
               />
             </div>
             <div className="hidden md:block ml-2">
-              <h1 className="text-lg font-bold text-gray-800">Sistem Deklarasi Keterpaksaan Benturan Kepentingan UKPBJ</h1>
+              <h1 className="text-lg font-bold text-gray-800">Sistem Deklarasi Keterpaksaan Benturan Kepentingan</h1>
               <p className="text-xs text-gray-600">Kementerian Ketenagakerjaan Republik Indonesia</p>
             </div>
           </Link>
@@ -39,14 +39,14 @@ export default function Header() {
             <Link href="/" className="text-gray-700 hover:text-primary-600 transition-colors font-medium">
               Beranda
             </Link>
-            <Link href="/laporan" className="text-gray-700 hover:text-primary-600 transition-colors font-medium">
-              Buat Laporan
-            </Link>
             <Link href="/deklarasi" className="text-gray-700 hover:text-primary-600 transition-colors font-medium">
               Buat Deklarasi
             </Link>
+            <Link href="/laporan" className="text-gray-700 hover:text-primary-600 transition-colors font-medium">
+              Buat Laporan
+            </Link>
             <Link href="/admin" className="btn-primary">
-              Login Admin
+              Login
             </Link>
           </div>
 
@@ -72,14 +72,14 @@ export default function Header() {
             <Link href="/" className="block py-2 text-gray-700 hover:text-primary-600 transition-colors font-medium">
               Beranda
             </Link>
-            <Link href="/laporan" className="block py-2 text-gray-700 hover:text-primary-600 transition-colors font-medium">
-              Buat Laporan
-            </Link>
             <Link href="/deklarasi" className="block py-2 text-gray-700 hover:text-primary-600 transition-colors font-medium">
               Buat Deklarasi
             </Link>
+            <Link href="/laporan" className="block py-2 text-gray-700 hover:text-primary-600 transition-colors font-medium">
+              Buat Laporan
+            </Link>
             <Link href="/admin" className="block py-2 text-primary-600 font-semibold">
-              Login Admin
+              Login
             </Link>
           </div>
         )}

@@ -281,8 +281,8 @@ export default function AdminDashboard() {
       <header className="bg-white shadow-md">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Dashboard Admin</h1>
-            <p className="text-sm text-gray-600">UKPBJ Kementerian Ketenagakerjaan</p>
+            <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+            <p className="text-sm text-gray-600">Top Management</p>
           </div>
           <button onClick={handleLogout} className="btn-secondary">
             Logout
