@@ -16,19 +16,30 @@ export default function LaporanPage() {
     waktuKejadian: '',
     subjek: '',
     isiLaporan: '',
+    kategoriLainnya: '',
   });
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (formData.kategori === 'Lainnya' && (!formData.kategoriLainnya || !formData.kategoriLainnya.trim())) {
+      alert('Mohon sebutkan kategori lainnya.');
+      return;
+    }
+
     setLoading(true);
 
     try {
       // Create a FormData object to send both form data and files
       const formDataToSend = new FormData();
       
+      const finalKategori = formData.kategori === 'Lainnya' 
+        ? `Lainnya - ${formData.kategoriLainnya}` 
+        : formData.kategori;
+
       // Add form fields to FormData
-      formDataToSend.append('kategori', formData.kategori);
+      formDataToSend.append('kategori', finalKategori);
       formDataToSend.append('waktuKejadian', formData.waktuKejadian);
       formDataToSend.append('subjek', formData.subjek);
       formDataToSend.append('isiLaporan', formData.isiLaporan);
@@ -46,7 +57,7 @@ export default function LaporanPage() {
 
       if (response.ok) {
         setSuccess(true);
-        setFormData({ kategori: '', waktuKejadian: '', subjek: '', isiLaporan: '' });
+        setFormData({ kategori: '', waktuKejadian: '', subjek: '', isiLaporan: '', kategoriLainnya: '' });
         setSelectedFiles([]); // Clear selected files after successful submission
       } else {
         const errorData = await response.json();
@@ -142,7 +153,7 @@ export default function LaporanPage() {
                     onChange={(e) => setFormData({ ...formData, kategori: e.target.value })}
                     className="input-field"
                   >
-                    <option value="">-- Pilih Kategori --</option>
+                    <option value="" disabled hidden>-- Pilih Kategori --</option>
                     <option value="Gratifikasi">Gratifikasi</option>
                     <option value="Kolusi / Persekongkolan Tender">Kolusi / Persekongkolan Tender</option>
                     <option value="Nepotisme">Nepotisme</option>
@@ -152,6 +163,23 @@ export default function LaporanPage() {
                     <option value="Lainnya">Lainnya</option>
                   </select>
                 </div>
+
+                {/* Input field for "Lainnya" in Kategori */}
+                {formData.kategori === 'Lainnya' && (
+                  <div>
+                    <label className="form-label">
+                      Sebutkan Kategori Lainnya <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Jelaskan kategori pelanggaran lainnya"
+                      value={formData.kategoriLainnya || ''}
+                      onChange={(e) => setFormData({ ...formData, kategoriLainnya: e.target.value })}
+                      className="input-field"
+                    />
+                  </div>
+                )}
 
                 {/* Waktu Kejadian */}
                 <div>

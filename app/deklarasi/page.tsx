@@ -19,6 +19,7 @@ export default function DeklarasiPage() {
     kepentingan?: string;
     lainnya?: string;
     lainnyaLainnya: string;
+    bentukHubunganLainnya?: string;
   }>({
     namaLengkap: '',
     nipNik: '',
@@ -30,6 +31,7 @@ export default function DeklarasiPage() {
     bentukHubungan: '',
     uraianDetail: '',
     lainnyaLainnya: '',
+    bentukHubunganLainnya: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,15 +48,27 @@ export default function DeklarasiPage() {
       return;
     }
 
-
+    // Validation for "bentukHubunganLainnya" when "bentukHubungan" is "Lainnya"
+    if (formData.bentukHubungan === 'Lainnya' && (!formData.bentukHubunganLainnya || !formData.bentukHubunganLainnya.trim())) {
+      alert('Mohon isi keterangan untuk Bentuk Hubungan "Lainnya".');
+      return;
+    }
 
     setLoading(true);
+
+    // Siapkan payload dengan menggabungkan bentukHubunganLainnya jika bentukHubungan adalah "Lainnya"
+    const payloadData = {
+      ...formData,
+      bentukHubungan: formData.bentukHubungan === 'Lainnya' 
+        ? `Lainnya - ${formData.bentukHubunganLainnya}` 
+        : formData.bentukHubungan
+    };
 
     try {
       const response = await fetch('/api/submit-deklarasi', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payloadData),
       });
 
       if (response.ok) {
@@ -76,6 +90,7 @@ export default function DeklarasiPage() {
           kepentingan: undefined,
           lainnya: undefined,
           lainnyaLainnya: '',
+          bentukHubunganLainnya: '',
         });
         setAgreed(false);
       } else {
@@ -272,7 +287,7 @@ export default function DeklarasiPage() {
                         onChange={(e) => setFormData({ ...formData, bentukHubungan: e.target.value })}
                         className="input-field"
                       >
-                        <option value="">-- Pilih Bentuk Hubungan --</option>
+                        <option value="" disabled hidden>-- Pilih Bentuk Hubungan --</option>
                         <option value="Hubungan Keluarga (Suami/Istri, Anak, Saudara Kandung, Orang Tua, Mertua)">
                           Hubungan Keluarga (Suami/Istri, Anak, Saudara Kandung, Orang Tua, Mertua)
                         </option>
@@ -288,6 +303,23 @@ export default function DeklarasiPage() {
                         <option value="Lainnya">Lainnya</option>
                       </select>
                     </div>
+
+                    {/* Input field for "Lainnya" in Bentuk Hubungan */}
+                    {formData.bentukHubungan === 'Lainnya' && (
+                      <div className="mt-4">
+                        <label className="form-label">
+                          Sebutkan Bentuk Hubungan Lainnya <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="Jelaskan bentuk hubungan lainnya"
+                          value={formData.bentukHubunganLainnya || ''}
+                          onChange={(e) => setFormData({ ...formData, bentukHubunganLainnya: e.target.value })}
+                          className="input-field"
+                        />
+                      </div>
+                    )}
 
                     {/* Uraian Detail */}
                     <div>
