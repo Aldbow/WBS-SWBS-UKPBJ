@@ -29,7 +29,7 @@ export default function Header() {
               />
             </div>
             <div className="hidden md:block ml-2">
-              <h1 className="text-lg font-bold text-gray-800">Sistem Deklarasi Keterpaksaan dan Benturan Kepentingan UKPBJ</h1>
+              <h1 className="text-lg font-bold text-gray-800">Sistem Deklarasi Keterpaksaan Benturan Kepentingan UKPBJ</h1>
               <p className="text-xs text-gray-600">Kementerian Ketenagakerjaan Republik Indonesia</p>
             </div>
           </Link>
