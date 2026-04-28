@@ -97,7 +97,7 @@ const EvidenceFilesSection = ({ reportDir }: { reportDir: string }) => {
 
 export default function AdminDashboard() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'laporan' | 'deklarasi'>('laporan');
+  const [activeTab, setActiveTab] = useState<'laporan' | 'deklarasi'>('deklarasi');
   const [laporanData, setLaporanData] = useState<LaporanData[]>([]);
   const [deklarasiData, setDeklarasiData] = useState<DeklarasiData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -306,15 +306,6 @@ export default function AdminDashboard() {
 
         {/* Statistics */}
         <div className="grid md:grid-cols-2 gap-6 mb-8">
-          <div className="card bg-gradient-to-br from-primary-500 to-primary-600 text-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-primary-100 text-sm font-medium">Total Laporan Pelanggaran</p>
-                <p className="text-4xl font-bold mt-2">{laporanData.length}</p>
-              </div>
-              <div className="text-6xl opacity-20">📢</div>
-            </div>
-          </div>
           <div className="card bg-gradient-to-br from-yellow-500 to-yellow-600 text-white">
             <div className="flex items-center justify-between">
               <div>
@@ -324,12 +315,21 @@ export default function AdminDashboard() {
               <div className="text-6xl opacity-20">📝</div>
             </div>
           </div>
+          <div className="card bg-gradient-to-br from-primary-500 to-primary-600 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-primary-100 text-sm font-medium">Total Laporan Pelanggaran</p>
+                <p className="text-4xl font-bold mt-2">{laporanData.length}</p>
+              </div>
+              <div className="text-6xl opacity-20">📢</div>
+            </div>
+          </div>
         </div>
 
         {/* Analytics Section - Only show if there's data */}
         {laporanData.length > 0 || deklarasiData.length > 0 ? (
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Analisis dan Laporan</h2>
+            {/* <h2 className="text-2xl font-bold text-gray-900 mb-6">Analisis dan Laporan</h2> */}
             <DashboardAnalytics laporanData={laporanData} deklarasiData={deklarasiData} />
           </div>
         ) : null}
@@ -341,22 +341,22 @@ export default function AdminDashboard() {
           <div className="border-b border-gray-200 mb-6">
             <div className="flex space-x-8">
               <button
-                onClick={() => setActiveTab('laporan')}
-                className={`pb-4 px-2 font-semibold border-b-2 transition-colors ${activeTab === 'laporan'
-                  ? 'border-primary-600 text-primary-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-                  }`}
-              >
-                Laporan Pelanggaran ({laporanData.length})
-              </button>
-              <button
                 onClick={() => setActiveTab('deklarasi')}
                 className={`pb-4 px-2 font-semibold border-b-2 transition-colors ${activeTab === 'deklarasi'
                   ? 'border-primary-600 text-primary-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700'
                   }`}
               >
-                Deklarasi Benturan Kepentingan ({deklarasiData.length})
+                Deklarasi ({deklarasiData.length})
+              </button>
+              <button
+                onClick={() => setActiveTab('laporan')}
+                className={`pb-4 px-2 font-semibold border-b-2 transition-colors ${activeTab === 'laporan'
+                  ? 'border-primary-600 text-primary-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+              >
+                Laporan ({laporanData.length})
               </button>
             </div>
           </div>

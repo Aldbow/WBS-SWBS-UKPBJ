@@ -164,20 +164,6 @@ export default function Home() {
               </AnimatedText>
               <StaggerContainer className="grid md:grid-cols-2 gap-6" staggerDelay={0.2}>
                 <AnimatedCard className="card group">
-                  <Link href="/laporan">
-                    <div className="text-5xl mb-4">📢</div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-primary-600 transition-colors">
-                      Laporkan Pelanggaran
-                    </h3>
-                    <p className="text-gray-600 mb-4">
-                      Sampaikan dugaan pelanggaran secara anonim dan aman.
-                    </p>
-                    <span className="text-primary-600 font-semibold group-hover:underline">
-                      Buat Laporan →
-                    </span>
-                  </Link>
-                </AnimatedCard>
-                <AnimatedCard className="card group">
                   <Link href="/deklarasi">
                     <div className="text-5xl mb-4">📝</div>
                     <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-primary-600 transition-colors">
@@ -188,6 +174,20 @@ export default function Home() {
                     </p>
                     <span className="text-primary-600 font-semibold group-hover:underline">
                       Buat Deklarasi →
+                    </span>
+                  </Link>
+                </AnimatedCard>
+                <AnimatedCard className="card group">
+                  <Link href="/laporan">
+                    <div className="text-5xl mb-4">📢</div>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-primary-600 transition-colors">
+                      Laporkan Pelanggaran
+                    </h3>
+                    <p className="text-gray-600 mb-4">
+                      Sampaikan dugaan pelanggaran secara anonim dan aman.
+                    </p>
+                    <span className="text-primary-600 font-semibold group-hover:underline">
+                      Buat Laporan →
                     </span>
                   </Link>
                 </AnimatedCard>
