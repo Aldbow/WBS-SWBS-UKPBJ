@@ -34,6 +34,8 @@ export default function DeklarasiPage() {
     bentukHubunganLainnya: '',
   });
 
+  const [ticketId, setTicketId] = useState<string | null>(null);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -72,6 +74,8 @@ export default function DeklarasiPage() {
       });
 
       if (response.ok) {
+        const responseData = await response.json();
+        setTicketId(responseData.id);
         setSuccess(true);
         setFormData({
           namaLengkap: '',
@@ -108,18 +112,50 @@ export default function DeklarasiPage() {
     return (
       <>
         <Header />
-        <main className="min-h-screen flex items-center justify-center py-16">
-          <div className="max-w-2xl mx-auto px-4 text-center animate-fade-in">
-            <div className="text-6xl mb-6">✅</div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">Deklarasi Terkirim</h1>
-            <p className="text-lg text-gray-600 mb-8">
-              Deklarasi Anda telah berhasil dicatat dan dikirimkan. Terima kasih atas
-              transparansi dan komitmen Anda dalam menjaga integritas proses pengadaan.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-              <button onClick={() => router.push('/')} className="btn-primary">
-                Kembali ke Beranda
-              </button>
+        <main className="min-h-screen flex items-center justify-center py-16 bg-gray-50">
+          <div className="max-w-2xl mx-auto px-4 w-full animate-fade-in">
+            <div className="bg-white rounded-xl shadow-lg p-8 md:p-12 text-center">
+              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+              </div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Deklarasi Terkirim!</h1>
+              <p className="text-gray-600 mb-8">
+                Deklarasi Anda telah berhasil dicatat. Terima kasih atas transparansi dan komitmen Anda dalam menjaga integritas proses pengadaan.
+              </p>
+              
+              <div className="bg-primary-50 border border-primary-200 rounded-lg p-6 mb-8 text-left">
+                <h3 className="text-sm font-semibold text-primary-800 uppercase tracking-wider mb-2">Nomor Tiket Anda</h3>
+                <div className="flex items-center justify-between bg-white border border-primary-300 rounded p-4 shadow-sm">
+                  <code className="text-2xl font-mono font-bold text-primary-700">{ticketId}</code>
+                  <button 
+                    onClick={() => {
+                      if (ticketId) {
+                        navigator.clipboard.writeText(ticketId);
+                        alert('Nomor tiket berhasil disalin!');
+                      }
+                    }}
+                    className="p-2 text-primary-600 hover:text-primary-800 hover:bg-primary-100 rounded transition-colors"
+                    title="Salin Nomor Tiket"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                  </button>
+                </div>
+                <p className="text-sm text-primary-700 mt-3 flex items-start">
+                  <svg className="w-5 h-5 mr-1.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  Simpan nomor tiket ini dengan baik! Anda dapat menggunakannya untuk mengecek status tindak lanjut deklarasi Anda.
+                </p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row justify-center gap-4">
+                <button onClick={() => router.push(`/cek-tiket?id=${ticketId}`)} className="btn-primary">
+                  Cek Status Deklarasi
+                </button>
+                <button onClick={() => router.push('/')} className="btn-secondary">
+                  Kembali ke Beranda
+                </button>
+              </div>
             </div>
           </div>
         </main>

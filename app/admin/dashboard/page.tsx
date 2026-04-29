@@ -27,6 +27,13 @@ interface DeklarasiData {
   pihakTerkait: string;
   bentukHubungan: string;
   uraianDetail: string;
+  keluarga?: string;
+  keuangan?: string;
+  hadiah?: string;
+  pekerjaan?: string;
+  kepentingan?: string;
+  lainnya?: string;
+  lainnyaLainnya?: string;
   status?: string;
   priority?: string;
 }
@@ -680,7 +687,7 @@ export default function AdminDashboard() {
                         </div>
                       </div>
                     </div>
-                    <div className="border-l-4 border-yellow-500 pl-4">
+                    <div className="border-l-4 border-yellow-500 pl-4 mb-6">
                       <h4 className="font-semibold text-gray-900 mb-4">Detail Benturan Kepentingan</h4>
                       <div className="space-y-3">
                         <div>
@@ -703,6 +710,40 @@ export default function AdminDashboard() {
                           <label className="text-sm font-semibold text-gray-700">Waktu Pengiriman</label>
                           <p className="text-gray-900 mt-1">{selectedItem.waktuKirim}</p>
                         </div>
+                      </div>
+                    </div>
+                    
+                    <div className="border-l-4 border-red-500 pl-4">
+                      <h4 className="font-semibold text-gray-900 mb-4">Situasi Potensial Benturan Kepentingan (Bagian C)</h4>
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
+                          <div>
+                            <span className="text-xs font-semibold text-gray-500 uppercase">Hubungan Keuangan</span>
+                            <p className="text-sm font-medium text-gray-900 mt-1 capitalize">{selectedItem.keuangan || '-'}</p>
+                          </div>
+                          <div>
+                            <span className="text-xs font-semibold text-gray-500 uppercase">Menerima Hadiah</span>
+                            <p className="text-sm font-medium text-gray-900 mt-1 capitalize">{selectedItem.hadiah || '-'}</p>
+                          </div>
+                          <div>
+                            <span className="text-xs font-semibold text-gray-500 uppercase">Pernah Bekerja</span>
+                            <p className="text-sm font-medium text-gray-900 mt-1 capitalize">{selectedItem.pekerjaan || '-'}</p>
+                          </div>
+                          <div>
+                            <span className="text-xs font-semibold text-gray-500 uppercase">Kepentingan Pribadi</span>
+                            <p className="text-sm font-medium text-gray-900 mt-1 capitalize">{selectedItem.kepentingan || '-'}</p>
+                          </div>
+                          <div>
+                            <span className="text-xs font-semibold text-gray-500 uppercase">Lainnya</span>
+                            <p className="text-sm font-medium text-gray-900 mt-1 capitalize">{selectedItem.lainnya || '-'}</p>
+                          </div>
+                        </div>
+                        {selectedItem.lainnya === 'ya' && selectedItem.lainnyaLainnya && (
+                          <div className="mt-3">
+                            <label className="text-sm font-semibold text-gray-700">Keterangan Lainnya</label>
+                            <p className="text-sm text-gray-900 mt-1 bg-yellow-50 p-3 border border-yellow-200 rounded">{selectedItem.lainnyaLainnya}</p>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

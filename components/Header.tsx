@@ -45,6 +45,9 @@ export default function Header() {
             <Link href="/laporan" className="text-gray-700 hover:text-primary-600 transition-colors font-medium">
               Buat Laporan
             </Link>
+            <Link href="/cek-tiket" className="text-gray-700 hover:text-primary-600 transition-colors font-medium">
+              Cek Tiket
+            </Link>
             <Link href="/admin" className="btn-primary">
               Login
             </Link>
@@ -77,6 +80,9 @@ export default function Header() {
             </Link>
             <Link href="/laporan" className="block py-2 text-gray-700 hover:text-primary-600 transition-colors font-medium">
               Buat Laporan
+            </Link>
+            <Link href="/cek-tiket" className="block py-2 text-gray-700 hover:text-primary-600 transition-colors font-medium">
+              Cek Tiket
             </Link>
             <Link href="/admin" className="block py-2 text-primary-600 font-semibold">
               Login
