@@ -78,19 +78,68 @@ const EvidenceFilesSection = ({ reportDir }: { reportDir: string }) => {
   if (files.length === 0) return <p className="text-gray-500 mt-1">Tidak ada bukti yang diunggah</p>;
 
   return (
-    <div className="mt-2 space-y-2">
-      {files.map((file, index) => (
-        <a
-          key={index}
-          href={`/api/admin/view-file?fileName=${encodeURIComponent(file.name)}&reportDir=${encodeURIComponent(reportDir)}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center text-primary-600 hover:underline block"
-        >
-          <span className="mr-2">📎</span>
-          {file.name}
-        </a>
-      ))}
+    <div className="mt-4 grid grid-cols-1 gap-6">
+      {files.map((file, index) => {
+        const fileUrl = `/api/admin/view-file?fileName=${encodeURIComponent(file.name)}&reportDir=${encodeURIComponent(reportDir)}`;
+        const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(file.name);
+        const isPdf = /\.pdf$/i.test(file.name);
+
+        return (
+          <div key={index} className="border rounded-lg p-4 bg-gray-50 shadow-sm">
+            <div className="flex justify-between items-center mb-3 overflow-hidden">
+              <div className="flex items-center text-gray-800 text-sm font-semibold truncate max-w-[60%]">
+                <span className="mr-2 flex-shrink-0 text-lg">📎</span>
+                <span className="truncate">{file.name}</span>
+              </div>
+              <div className="flex items-center space-x-2 flex-shrink-0">
+                <a
+                  href={fileUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center text-primary-700 hover:text-primary-900 bg-primary-100 hover:bg-primary-200 px-3 py-1.5 rounded text-xs font-medium transition-colors"
+                  title="Lihat Penuh di Tab Baru"
+                >
+                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
+                  Full View
+                </a>
+                <a 
+                  href={fileUrl} 
+                  download={file.name}
+                  className="flex items-center text-gray-600 hover:text-gray-900 bg-gray-200 hover:bg-gray-300 px-3 py-1.5 rounded text-xs font-medium transition-colors"
+                  title="Download File"
+                >
+                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                  Download
+                </a>
+              </div>
+            </div>
+            
+            {isImage ? (
+              <div className="mt-2 rounded-lg overflow-hidden bg-white border border-gray-200 flex justify-center items-center shadow-inner">
+                <img 
+                  src={fileUrl} 
+                  alt={file.name} 
+                  className="w-full max-h-[600px] object-contain"
+                  loading="lazy"
+                />
+              </div>
+            ) : isPdf ? (
+              <div className="mt-2 h-[600px] rounded-lg overflow-hidden border border-gray-200 bg-white shadow-inner">
+                <iframe 
+                  src={`${fileUrl}#toolbar=0`} 
+                  className="w-full h-full"
+                  title={file.name}
+                ></iframe>
+              </div>
+            ) : (
+              <div className="mt-2 h-48 flex flex-col items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-400 shadow-inner">
+                 <svg className="w-12 h-12 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                 <span className="text-sm font-medium">Pratinjau tidak tersedia</span>
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 };
@@ -554,7 +603,7 @@ export default function AdminDashboard() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b p-6 flex justify-between items-center">
-              <h3 className="text-2xl font-bold text-gray-900">Detail</h3>
+              <h3 className="text-2xl font-bold text-gray-900">{isEditMode ? 'Edit Status & Prioritas' : 'Detail'}</h3>
               <button
                 onClick={() => setSelectedItem(null)}
                 className="text-gray-400 hover:text-gray-600 text-2xl"
@@ -562,103 +611,105 @@ export default function AdminDashboard() {
                 ×
               </button>
             </div>
-            <div className="p-6">
-              {'kategori' in selectedItem ? (
-                /* Laporan Detail */
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-sm font-semibold text-gray-700">ID Laporan</label>
-                    <p className="text-gray-900 mt-1">{selectedItem.id}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-semibold text-gray-700">Waktu Pelaporan</label>
-                    <p className="text-gray-900 mt-1">{selectedItem.waktuPelaporan}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-semibold text-gray-700">Kategori Pelanggaran</label>
-                    <p className="text-gray-900 mt-1">
-                      <span className="px-3 py-1 bg-primary-100 text-primary-800 rounded-full text-sm">
-                        {selectedItem.kategori}
-                      </span>
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-semibold text-gray-700">Waktu Kejadian</label>
-                    <p className="text-gray-900 mt-1">{selectedItem.waktuKejadian}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-semibold text-gray-700">Subjek Pelaporan</label>
-                    <p className="text-gray-900 mt-1">{selectedItem.subjek}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-semibold text-gray-700">Isi Laporan</label>
-                    <p className="text-gray-900 mt-1 whitespace-pre-wrap">{selectedItem.isiLaporan}</p>
-                  </div>
-
-                  {selectedItem.linkBukti && (
+            {!isEditMode && (
+              <div className="p-6">
+                {'kategori' in selectedItem ? (
+                  /* Laporan Detail */
+                  <div className="space-y-4">
                     <div>
-                      <label className="text-sm font-semibold text-gray-700">Bukti Laporan</label>
-                      <EvidenceFilesSection reportDir={selectedItem.linkBukti} />
+                      <label className="text-sm font-semibold text-gray-700">ID Laporan</label>
+                      <p className="text-gray-900 mt-1">{selectedItem.id}</p>
                     </div>
-                  )}
-                </div>
-              ) : (
-                /* Deklarasi Detail */
-                <div className="space-y-4">
-                  <div className="border-l-4 border-primary-500 pl-4 mb-6">
-                    <h4 className="font-semibold text-gray-900 mb-4">Data Diri</h4>
-                    <div className="space-y-3">
+                    <div>
+                      <label className="text-sm font-semibold text-gray-700">Waktu Pelaporan</label>
+                      <p className="text-gray-900 mt-1">{selectedItem.waktuPelaporan}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-semibold text-gray-700">Kategori Pelanggaran</label>
+                      <p className="text-gray-900 mt-1">
+                        <span className="px-3 py-1 bg-primary-100 text-primary-800 rounded-full text-sm">
+                          {selectedItem.kategori}
+                        </span>
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-semibold text-gray-700">Waktu Kejadian</label>
+                      <p className="text-gray-900 mt-1">{selectedItem.waktuKejadian}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-semibold text-gray-700">Subjek Pelaporan</label>
+                      <p className="text-gray-900 mt-1">{selectedItem.subjek}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-semibold text-gray-700">Isi Laporan</label>
+                      <p className="text-gray-900 mt-1 whitespace-pre-wrap">{selectedItem.isiLaporan}</p>
+                    </div>
+
+                    {selectedItem.linkBukti && (
                       <div>
-                        <label className="text-sm font-semibold text-gray-700">ID Deklarasi</label>
-                        <p className="text-gray-900 mt-1">{selectedItem.id}</p>
+                        <label className="text-sm font-semibold text-gray-700">Bukti Laporan</label>
+                        <EvidenceFilesSection reportDir={selectedItem.linkBukti} />
                       </div>
-                      <div>
-                        <label className="text-sm font-semibold text-gray-700">Nama Lengkap</label>
-                        <p className="text-gray-900 mt-1">{selectedItem.namaLengkap}</p>
+                    )}
+                  </div>
+                ) : (
+                  /* Deklarasi Detail */
+                  <div className="space-y-4">
+                    <div className="border-l-4 border-primary-500 pl-4 mb-6">
+                      <h4 className="font-semibold text-gray-900 mb-4">Data Diri</h4>
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-sm font-semibold text-gray-700">ID Deklarasi</label>
+                          <p className="text-gray-900 mt-1">{selectedItem.id}</p>
+                        </div>
+                        <div>
+                          <label className="text-sm font-semibold text-gray-700">Nama Lengkap</label>
+                          <p className="text-gray-900 mt-1">{selectedItem.namaLengkap}</p>
+                        </div>
+                        <div>
+                          <label className="text-sm font-semibold text-gray-700">NIP/NIK</label>
+                          <p className="text-gray-900 mt-1">{selectedItem.nipNik}</p>
+                        </div>
+                        <div>
+                          <label className="text-sm font-semibold text-gray-700">Jabatan</label>
+                          <p className="text-gray-900 mt-1">{selectedItem.jabatan}</p>
+                        </div>
+                        <div>
+                          <label className="text-sm font-semibold text-gray-700">Satuan Kerja</label>
+                          <p className="text-gray-900 mt-1">{selectedItem.satuanKerja}</p>
+                        </div>
                       </div>
-                      <div>
-                        <label className="text-sm font-semibold text-gray-700">NIP/NIK</label>
-                        <p className="text-gray-900 mt-1">{selectedItem.nipNik}</p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-semibold text-gray-700">Jabatan</label>
-                        <p className="text-gray-900 mt-1">{selectedItem.jabatan}</p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-semibold text-gray-700">Satuan Kerja</label>
-                        <p className="text-gray-900 mt-1">{selectedItem.satuanKerja}</p>
+                    </div>
+                    <div className="border-l-4 border-yellow-500 pl-4">
+                      <h4 className="font-semibold text-gray-900 mb-4">Detail Benturan Kepentingan</h4>
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-sm font-semibold text-gray-700">Nama Kegiatan/Paket</label>
+                          <p className="text-gray-900 mt-1">{selectedItem.namaKegiatan}</p>
+                        </div>
+                        <div>
+                          <label className="text-sm font-semibold text-gray-700">Pihak Terkait</label>
+                          <p className="text-gray-900 mt-1">{selectedItem.pihakTerkait}</p>
+                        </div>
+                        <div>
+                          <label className="text-sm font-semibold text-gray-700">Bentuk Hubungan</label>
+                          <p className="text-gray-900 mt-1">{selectedItem.bentukHubungan}</p>
+                        </div>
+                        <div>
+                          <label className="text-sm font-semibold text-gray-700">Uraian Detail</label>
+                          <p className="text-gray-900 mt-1 whitespace-pre-wrap">{selectedItem.uraianDetail}</p>
+                        </div>
+                        <div>
+                          <label className="text-sm font-semibold text-gray-700">Waktu Pengiriman</label>
+                          <p className="text-gray-900 mt-1">{selectedItem.waktuKirim}</p>
+                        </div>
                       </div>
                     </div>
                   </div>
-                  <div className="border-l-4 border-yellow-500 pl-4">
-                    <h4 className="font-semibold text-gray-900 mb-4">Detail Benturan Kepentingan</h4>
-                    <div className="space-y-3">
-                      <div>
-                        <label className="text-sm font-semibold text-gray-700">Nama Kegiatan/Paket</label>
-                        <p className="text-gray-900 mt-1">{selectedItem.namaKegiatan}</p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-semibold text-gray-700">Pihak Terkait</label>
-                        <p className="text-gray-900 mt-1">{selectedItem.pihakTerkait}</p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-semibold text-gray-700">Bentuk Hubungan</label>
-                        <p className="text-gray-900 mt-1">{selectedItem.bentukHubungan}</p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-semibold text-gray-700">Uraian Detail</label>
-                        <p className="text-gray-900 mt-1 whitespace-pre-wrap">{selectedItem.uraianDetail}</p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-semibold text-gray-700">Waktu Pengiriman</label>
-                        <p className="text-gray-900 mt-1">{selectedItem.waktuKirim}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-            <div className="border-t p-6 bg-gray-50 flex justify-end">
+                )}
+              </div>
+            )}
+            <div className={`p-6 bg-gray-50 flex justify-end ${isEditMode ? 'rounded-b-lg' : 'border-t'}`}>
               {isEditMode ? (
                 <div className="flex flex-col md:flex-row justify-between items-center w-full space-y-4 md:space-y-0">
                   <div className="flex space-x-4 items-end">
