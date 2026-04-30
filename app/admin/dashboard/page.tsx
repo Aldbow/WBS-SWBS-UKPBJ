@@ -109,8 +109,8 @@ const EvidenceFilesSection = ({ reportDir }: { reportDir: string }) => {
                   <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
                   Full View
                 </a>
-                <a 
-                  href={fileUrl} 
+                <a
+                  href={fileUrl}
                   download={file.name}
                   className="flex items-center text-gray-600 hover:text-gray-900 bg-gray-200 hover:bg-gray-300 px-3 py-1.5 rounded text-xs font-medium transition-colors"
                   title="Download File"
@@ -120,28 +120,28 @@ const EvidenceFilesSection = ({ reportDir }: { reportDir: string }) => {
                 </a>
               </div>
             </div>
-            
+
             {isImage ? (
               <div className="mt-2 rounded-lg overflow-hidden bg-white border border-gray-200 flex justify-center items-center shadow-inner">
-                <img 
-                  src={fileUrl} 
-                  alt={file.name} 
+                <img
+                  src={fileUrl}
+                  alt={file.name}
                   className="w-full max-h-[600px] object-contain"
                   loading="lazy"
                 />
               </div>
             ) : isPdf ? (
               <div className="mt-2 h-[600px] rounded-lg overflow-hidden border border-gray-200 bg-white shadow-inner">
-                <iframe 
-                  src={`${fileUrl}#toolbar=0`} 
+                <iframe
+                  src={`${fileUrl}#toolbar=0`}
                   className="w-full h-full"
                   title={file.name}
                 ></iframe>
               </div>
             ) : (
               <div className="mt-2 h-48 flex flex-col items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-400 shadow-inner">
-                 <svg className="w-12 h-12 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
-                 <span className="text-sm font-medium">Pratinjau tidak tersedia</span>
+                <svg className="w-12 h-12 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                <span className="text-sm font-medium">Pratinjau tidak tersedia</span>
               </div>
             )}
           </div>
@@ -365,7 +365,7 @@ export default function AdminDashboard() {
           <div className="card bg-gradient-to-br from-yellow-500 to-yellow-600 text-white">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-yellow-100 text-sm font-medium">Total Deklarasi Benturan Kepentingan</p>
+                <p className="text-yellow-100 text-sm font-medium">Total Deklarasi</p>
                 <p className="text-4xl font-bold mt-2">{deklarasiData.length}</p>
               </div>
               <div className="text-6xl opacity-20">📝</div>
@@ -374,7 +374,7 @@ export default function AdminDashboard() {
           <div className="card bg-gradient-to-br from-primary-500 to-primary-600 text-white">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-primary-100 text-sm font-medium">Total Laporan Pelanggaran</p>
+                <p className="text-primary-100 text-sm font-medium">Total Laporan</p>
                 <p className="text-4xl font-bold mt-2">{laporanData.length}</p>
               </div>
               <div className="text-6xl opacity-20">📢</div>
@@ -454,6 +454,7 @@ export default function AdminDashboard() {
                     <table className="w-full">
                       <thead className="bg-gray-50">
                         <tr>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID Tiket</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Waktu</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kategori</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Subjek</th>
@@ -466,6 +467,7 @@ export default function AdminDashboard() {
                       <tbody className="bg-white divide-y divide-gray-200">
                         {filteredLaporan.map((item, idx) => (
                           <tr key={idx} className="hover:bg-gray-50">
+                            <td className="px-4 py-3 text-sm font-medium text-gray-900">{item.id}</td>
                             <td className="px-4 py-3 text-sm text-gray-900">{item.waktuPelaporan}</td>
                             <td className="px-4 py-3 text-sm">
                               <span className="px-2 py-1 bg-primary-100 text-primary-800 rounded-full text-xs">
@@ -534,6 +536,7 @@ export default function AdminDashboard() {
                     <table className="w-full">
                       <thead className="bg-gray-50">
                         <tr>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID Tiket</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Waktu</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">NIP/NIK</th>
@@ -546,6 +549,7 @@ export default function AdminDashboard() {
                       <tbody className="bg-white divide-y divide-gray-200">
                         {filteredDeklarasi.map((item, idx) => (
                           <tr key={idx} className="hover:bg-gray-50">
+                            <td className="px-4 py-3 text-sm font-medium text-gray-900">{item.id}</td>
                             <td className="px-4 py-3 text-sm text-gray-900">{item.waktuKirim}</td>
                             <td className="px-4 py-3 text-sm text-gray-900">{item.namaLengkap}</td>
                             <td className="px-4 py-3 text-sm text-gray-600">{item.nipNik}</td>
@@ -712,7 +716,7 @@ export default function AdminDashboard() {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="border-l-4 border-red-500 pl-4">
                       <h4 className="font-semibold text-gray-900 mb-4">Situasi Potensial Benturan Kepentingan (Bagian C)</h4>
                       <div className="space-y-3">
